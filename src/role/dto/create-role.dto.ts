@@ -10,3 +10,13 @@ export class CreateRoleDto {
   @IsNotEmpty()
   permissions: string[];
 }
+
+export class AssignRoleDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  userId: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  roleId: string;
+}

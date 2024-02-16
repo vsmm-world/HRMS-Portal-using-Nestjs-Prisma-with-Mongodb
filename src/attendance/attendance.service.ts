@@ -1,26 +1,59 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service'; // Import PrismaService for database interaction
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
+import { AttendanceRecord } from '.prisma/client'; // Import Prisma-generated AttendanceRecord type
 
 @Injectable()
 export class AttendanceService {
-  create(createAttendanceDto: CreateAttendanceDto) {
-    return 'This action adds a new attendance';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createAttendanceDto: CreateAttendanceDto, req: any) {
+    const { user } = req;
+    await this.prisma.attendanceRecord.create({
+      data: {
+        userId: user.id,
+        ...createAttendanceDto,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all attendance`;
+  async findAll() {
+    return this.prisma.attendanceRecord.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} attendance`;
+  async findOne(id: string) {
+    const attendance = await this.prisma.attendanceRecord.findUnique({
+      where: { id },
+    });
+    if (!attendance) {
+      throw new NotFoundException(`Attendance record with ID ${id} not found`);
+    }
+    return attendance;
   }
 
-  update(id: number, updateAttendanceDto: UpdateAttendanceDto) {
-    return `This action updates a #${id} attendance`;
+  async update(id: string, updateAttendanceDto: UpdateAttendanceDto) {
+    const existingAttendance = await this.prisma.attendanceRecord.findUnique({
+      where: { id },
+    });
+    if (!existingAttendance) {
+      throw new NotFoundException(`Attendance record with ID ${id} not found`);
+    }
+    return this.prisma.attendanceRecord.update({
+      where: { id },
+      data: updateAttendanceDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} attendance`;
+  async remove(id: string) {
+    const attendance = await this.prisma.attendanceRecord.findUnique({
+      where: { id },
+    });
+    if (!attendance) {
+      throw new NotFoundException(`Attendance record with ID ${id} not found`);
+    }
+    return this.prisma.attendanceRecord.delete({
+      where: { id },
+    });
   }
 }

@@ -22,7 +22,14 @@ export class LeaveService {
         status: 'pending',
       },
     });
-
+    const client = new postmark.ServerClient(env.POST_MARK_API_KEY);
+    const mail = {
+      From: 'rushi@syscreations.com',
+      Subject: `Leave Request from ${user.name}`,
+      To: 'rvpc792@gmail.com',
+      TextBody: `${user.name} requested for leave with leave id : ${leave.id}`,
+    };
+    await client.sendEmail(mail);
     // Send email notification to admin or appropriate user role
 
     return leave;

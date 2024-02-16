@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
@@ -24,8 +25,8 @@ export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
   @Post()
-  create(@Body() createAttendanceDto: CreateAttendanceDto) {
-    return this.attendanceService.create(createAttendanceDto);
+  create(@Body() createAttendanceDto: CreateAttendanceDto,@Request() req) {
+    return this.attendanceService.create(createAttendanceDto,req);
   }
 
   @Get()
@@ -35,7 +36,7 @@ export class AttendanceController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.attendanceService.findOne(+id);
+    return this.attendanceService.findOne(id);
   }
 
   @Patch(':id')
@@ -43,11 +44,11 @@ export class AttendanceController {
     @Param('id') id: string,
     @Body() updateAttendanceDto: UpdateAttendanceDto,
   ) {
-    return this.attendanceService.update(+id, updateAttendanceDto);
+    return this.attendanceService.update(id, updateAttendanceDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.attendanceService.remove(+id);
+    return this.attendanceService.remove(id);
   }
 }

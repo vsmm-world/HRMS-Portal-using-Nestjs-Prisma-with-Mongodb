@@ -20,6 +20,8 @@ model User {
   Role             Role?              @relation(fields: [roleId], references: [id])
   roleId           String?            @db.ObjectId
   LeaveRequest     LeaveRequest[]
+  AttendanceRecord AttendanceRecord[]
+  Employee         Employee[]
 }
 
 model UserCreadentials {
@@ -44,52 +46,47 @@ model UserSession {
 }
 
 model Role {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  name        String     @unique
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique
   permissions String[]
   users       User[]
-  createdAt   DateTime   @default(now())
-  isDeleted   Boolean    @default(false)
-  Employee    Employee[]
+  createdAt   DateTime @default(now())
+  isDeleted   Boolean  @default(false)
 }
 
 model Employee {
-  id               String             @id @default(auto()) @map("_id") @db.ObjectId
-  firstName        String
-  lastName         String
-  email            String             @unique
-  role             Role               @relation(fields: [roleId], references: [id])
-  roleId           String             @db.ObjectId
-  department       String
-  jobTitle         String
-  contactInfo      String
-  isDeleted        Boolean            @default(false)
-  createdAt        DateTime           @default(now())
-  LeaveRequest     LeaveRequest[]
-  AttendanceRecord AttendanceRecord[]
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName   String
+  lastName    String
+  email       String   @unique
+  User        User     @relation(fields: [userId], references: [id])
+  userId      String   @db.ObjectId
+  department  String
+  jobTitle    String
+  contactInfo String
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }
 
 model LeaveRequest {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  User       User      @relation(fields: [userId], references: [id])
-  userId     String    @db.ObjectId
-  leaveType  String
-  startDate  DateTime
-  endDate    DateTime
-  reason     String
-  isDeleted  Boolean   @default(false)
-  status     String // pending, approved, rejected
-  createdAt  DateTime  @default(now())
-  Employee   Employee? @relation(fields: [employeeId], references: [id])
-  employeeId String?   @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  User      User     @relation(fields: [userId], references: [id])
+  userId    String   @db.ObjectId
+  leaveType String
+  startDate DateTime
+  endDate   DateTime
+  reason    String
+  isDeleted Boolean  @default(false)
+  status    String // pending, approved, rejected
+  createdAt DateTime @default(now())
 }
 
 model AttendanceRecord {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  employee   Employee @relation(fields: [employeeId], references: [id])
-  employeeId String   @db.ObjectId
-  checkIn    DateTime
-  checkOut   DateTime
-  isDeleted  Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  User      User      @relation(fields: [userId], references: [id])
+  userId    String    @db.ObjectId
+  checkIn   DateTime
+  checkOut  DateTime?
+  isDeleted Boolean   @default(false)
+  createdAt DateTime  @default(now())
 }
