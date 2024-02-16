@@ -5,26 +5,28 @@ import {
   PasswordValidator,
 } from '../../validator/custom-validator';
 
-export class CreateUserDto {
-  @ApiProperty()
-  @IsNotEmpty()
-  name: string;
-
+export class CreateAuthDto {
   @ApiProperty()
   @IsNotEmpty()
   @Validate(CustomEmailValidator, {
-    message: 'Invalid email format (e.g. example@test.com )',
+    message: 'Email is not valid',
   })
   email: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @Validate(PasswordValidator, {
-    message: 'Password is not strong enough',
+    message: 'Password is not valid',
   })
   password: string;
+}
+
+export class verifyOTPDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  otp: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  role: string;
+  otpRef: string;
 }

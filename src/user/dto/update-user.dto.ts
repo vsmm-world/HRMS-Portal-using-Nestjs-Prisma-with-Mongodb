@@ -1,4 +1,25 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateUserDto } from './create-user.dto';
+// update-user.dto.ts
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {}
+import { ApiProperty } from '@nestjs/swagger';
+import { Validate } from 'class-validator';
+import {
+  CustomEmailValidator,
+  PasswordValidator,
+} from 'src/validator/custom-validator';
+
+export class UpdateUserDto {
+  name?: string;
+  @ApiProperty()
+  @Validate(CustomEmailValidator, {
+    message: 'Invalid email format (e.g. example@test.com )',
+  })
+  email?: string;
+
+  @ApiProperty()
+  @Validate(PasswordValidator, {
+    message: 'Password is not strong enough',
+  })
+  password: string;
+  
+  roleId?: string;
+}
