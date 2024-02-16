@@ -23,8 +23,4 @@ export class CreateUserDto {
     message: 'Password is not strong enough',
   })
   password: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  role: string;
 }
