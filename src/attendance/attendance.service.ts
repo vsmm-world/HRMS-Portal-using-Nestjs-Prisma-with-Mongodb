@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service'; // Import PrismaService for database interaction
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
-import { AttendanceRecord } from '.prisma/client'; // Import Prisma-generated AttendanceRecord type
 
 @Injectable()
 export class AttendanceService {

@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  nest-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nest-app
+    container_name: nest-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run start:dev
+
+  nest-mongo-db:
+    image: mongo
+    container_name: nest-mongo-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - 27017:27017
+    volumes:
+      - ./data/db:/data/db
+
+  # valumes:
+  #   node_modules:
+  #   data/db:
