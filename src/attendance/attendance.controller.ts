@@ -25,13 +25,13 @@ export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
   @Post()
-  create(@Body() createAttendanceDto: CreateAttendanceDto,@Request() req) {
-    return this.attendanceService.create(createAttendanceDto,req);
+  create(@Body() createAttendanceDto: CreateAttendanceDto, @Request() req) {
+    return this.attendanceService.create(createAttendanceDto, req);
   }
 
   @Get()
-  findAll() {
-    return this.attendanceService.findAll();
+  findAll(@Request() req) {
+    return this.attendanceService.findAll(req);
   }
 
   @Get(':id')

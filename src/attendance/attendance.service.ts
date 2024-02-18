@@ -18,8 +18,9 @@ export class AttendanceService {
     });
   }
 
-  async findAll() {
-    return this.prisma.attendanceRecord.findMany();
+  async findAll(req: any) {
+    const { user } = req;
+    return this.prisma.attendanceRecord.findMany({ where: { id: user.id } });
   }
 
   async findOne(id: string) {
@@ -52,8 +53,11 @@ export class AttendanceService {
     if (!attendance) {
       throw new NotFoundException(`Attendance record with ID ${id} not found`);
     }
-    return this.prisma.attendanceRecord.delete({
-      where: { id },
+    return this.prisma.attendanceRecord.update({
+      where: { id: attendance.id },
+      data: {
+        isDeleted: true,
+      },
     });
   }
 }
