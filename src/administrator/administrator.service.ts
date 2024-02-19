@@ -15,16 +15,7 @@ export class AdministratorService {
     if (!this.chekAdmin(req)) {
       throw new UnauthorizedException('You are not admin');
     }
-
-    const {
-      contactInfo,
-      jobTitle,
-      department,
-      lastName,
-      firstName,
-      userId,
-      email,
-    } = createAdministratorDto;
+    const { userId } = createAdministratorDto;
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId, isDeleted: false },
@@ -92,12 +83,13 @@ export class AdministratorService {
 
   async chekAdmin(req: any) {
     const { user } = req;
-    console.log(user);
-    const chekRole = await this.prisma.role.findFirst({
-      where: { id:user.roleId, isDeleted: false },
+    const admin = await this.prisma.user.findUnique({
+      where: { id: user.id, isDeleted: false },
     });
-    console.log(chekRole);
-    if (!(chekRole.name == 'admin')) {
+    const chekRole = await this.prisma.role.findFirst({
+      where: { id: admin.roleId },
+    });
+    if (chekRole.name != 'admin') {
       return false;
     }
     return true;

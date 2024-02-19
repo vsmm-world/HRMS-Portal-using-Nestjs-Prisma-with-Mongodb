@@ -5,7 +5,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import puppeteer from 'puppeteer';
 import handlebars from 'handlebars';
 import * as fs from 'fs';
-
+import * as postmark from 'postmark';
+import { env } from 'process';
 @Injectable()
 export class EmployeeService {
   constructor(private prisma: PrismaService) {}
@@ -123,6 +124,24 @@ export class EmployeeService {
 
       // Close the browser
       await browser.close();
+      const client = new postmark.ServerClient(env.POST_MARK_API_KEY);
+
+      let message = new postmark.Models.Message(
+        'rushi@syscreations.com',
+        'Your Salary Slip From HRMS Portal',
+        'Find the attachment below',
+        'Find the attachment below',
+        `${user.email}`,
+      );
+
+      const attachment2 = new postmark.Models.Attachment(
+        'SalarySlip.pdf',
+        Buffer.from(pdfBuffer).toString('base64'),
+        'application/pdf',
+      );
+      message.Attachments = [attachment2];
+
+      client.sendEmail(message);
     }
 
     // Example usage:

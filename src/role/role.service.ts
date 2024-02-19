@@ -49,7 +49,6 @@ export class RoleService {
     const chekRole = await this.prisma.role.findFirst({
       where: { id: admin.roleId },
     });
-
     if (chekRole.name != 'admin') {
       throw new UnauthorizedException();
     }
