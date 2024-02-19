@@ -75,7 +75,7 @@ export class LeaveService {
   }
 
   async approve(approvalDto, req: any) {
-    const { id, status } = approvalDto;
+    const { id} = approvalDto;
     const leave = await this.prisma.leaveRequest.findUnique({
       where: { id },
     });
@@ -102,7 +102,7 @@ export class LeaveService {
     return updatedLeave;
   }
   async reject(approvalDto, req: any) {
-    const { id, status } = approvalDto;
+    const { id } = approvalDto;
     const leave = await this.prisma.leaveRequest.findUnique({
       where: { id },
     });

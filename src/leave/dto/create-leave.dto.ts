@@ -20,8 +20,4 @@ export class ApprovalDto {
   @ApiProperty()
   @IsNotEmpty()
   id: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  status: string;
 }

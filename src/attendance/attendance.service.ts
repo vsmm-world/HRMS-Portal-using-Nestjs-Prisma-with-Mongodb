@@ -9,7 +9,7 @@ export class AttendanceService {
 
   async create(createAttendanceDto: CreateAttendanceDto, req: any) {
     const { user } = req;
-    await this.prisma.attendanceRecord.create({
+    return this.prisma.attendanceRecord.create({
       data: {
         userId: user.id,
         ...createAttendanceDto,
