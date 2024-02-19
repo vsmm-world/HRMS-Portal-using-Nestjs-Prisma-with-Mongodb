@@ -22,7 +22,7 @@ export class UserService {
       throw new Error('Email already in use');
     }
     const user = await this.prisma.user.create({
-      data: { name, email, roleId: '65cef30f49a030360580ba32' },
+      data: { name, email, roleId: '65d2404bd7ba66596aa57fa3' },
     });
     const cred = await this.prisma.userCreadentials.create({
       data: {

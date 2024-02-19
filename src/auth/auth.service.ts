@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateAuthDto, verifyOTPDto } from './dto/create-auth.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
@@ -71,6 +71,7 @@ export class AuthService {
 
       return { updatedUserSession, token };
     }
+    throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
   }
 
   async login(createAuthDto: CreateAuthDto) {
