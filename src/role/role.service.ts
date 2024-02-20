@@ -1,6 +1,7 @@
 // role.service.ts
 
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -50,7 +51,7 @@ export class RoleService {
       where: { id: admin.roleId },
     });
     if (chekRole.name != 'admin') {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Acces Denied');
     }
     return this.prisma.role.create({
       data: {

@@ -69,13 +69,16 @@ export class LeaveService {
     if (!leave) {
       throw new NotFoundException(`Leave request with ID ${id} not found`);
     }
-    return this.prisma.leaveRequest.delete({
+    return this.prisma.leaveRequest.update({
       where: { id },
+      data: {
+        isDeleted: true,
+      },
     });
   }
 
   async approve(approvalDto, req: any) {
-    const { id} = approvalDto;
+    const { id } = approvalDto;
     const leave = await this.prisma.leaveRequest.findUnique({
       where: { id },
     });

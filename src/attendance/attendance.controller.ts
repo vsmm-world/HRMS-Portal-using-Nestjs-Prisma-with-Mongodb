@@ -34,21 +34,21 @@ export class AttendanceController {
     return this.attendanceService.findAll(req);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.attendanceService.findOne(id);
+  @Get(':attendanceId')
+  findOne(@Param('attendanceId') attendanceId: string) {
+    return this.attendanceService.findOne(attendanceId);
   }
 
-  @Patch(':id')
+  @Patch(':attendanceId')
   update(
-    @Param('id') id: string,
+    @Param('attendanceId') attendanceId: string,
     @Body() updateAttendanceDto: UpdateAttendanceDto,
   ) {
-    return this.attendanceService.update(id, updateAttendanceDto);
+    return this.attendanceService.update(attendanceId, updateAttendanceDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.attendanceService.remove(id);
+  @Delete(':attendanceId')
+  remove(@Param('attendanceId') attendanceId: string) {
+    return this.attendanceService.remove(attendanceId);
   }
 }

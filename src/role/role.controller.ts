@@ -37,22 +37,22 @@ export class RoleController {
     return this.roleService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.roleService.findOne(id);
+  @Get(':roleId')
+  findOne(@Param('roleId') roleId: string) {
+    return this.roleService.findOne(roleId);
   }
 
-  @Patch(':id')
+  @Patch(':roleId')
   update(
-    @Param('id') id: string,
+    @Param('roleId') roleId: string,
     @Body() updateRoleDto: UpdateRoleDto,
     @Request() req,
   ) {
-    return this.roleService.update(id, updateRoleDto, req);
+    return this.roleService.update(roleId, updateRoleDto, req);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string, @Request() req) {
-    return this.roleService.remove(id, req);
+  @Delete(':roleId')
+  remove(@Param('roleId') roleId: string, @Request() req) {
+    return this.roleService.remove(roleId, req);
   }
 }

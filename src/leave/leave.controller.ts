@@ -39,18 +39,18 @@ export class LeaveController {
     return this.leaveService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.leaveService.findOne(id);
+  @Get(':leaveId')
+  findOne(@Param('leaveId') leaveId: string) {
+    return this.leaveService.findOne(leaveId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLeaveDto: UpdateLeaveDto) {
-    return this.leaveService.update(id, updateLeaveDto);
+  @Patch(':leaveId')
+  update(@Param('leaveId') leaveId: string, @Body() updateLeaveDto: UpdateLeaveDto) {
+    return this.leaveService.update(leaveId, updateLeaveDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.leaveService.remove(id);
+  @Delete(':leaveId')
+  remove(@Param('leaveId') leaveId: string) {
+    return this.leaveService.remove(leaveId);
   }
 }
