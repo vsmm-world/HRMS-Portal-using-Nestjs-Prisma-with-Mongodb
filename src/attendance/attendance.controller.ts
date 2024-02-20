@@ -10,7 +10,10 @@ import {
   Request,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
-import { CreateAttendanceDto } from './dto/create-attendance.dto';
+import {
+  CreateAttendanceDto,
+  getAttendance,
+} from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -24,9 +27,13 @@ import { AuthGuard } from '@nestjs/passport';
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
-  @Post()
-  create(@Body() createAttendanceDto: CreateAttendanceDto, @Request() req) {
-    return this.attendanceService.create(createAttendanceDto, req);
+  @Post('chekIn')
+  chekIn(@Request() req) {
+    return this.attendanceService.chekIn(req);
+  }
+  @Post('chekOut')
+  chekOut(@Request() req) {
+    return this.attendanceService.chekOut(req);
   }
 
   @Get()
@@ -37,6 +44,17 @@ export class AttendanceController {
   @Get(':attendanceId')
   findOne(@Param('attendanceId') attendanceId: string) {
     return this.attendanceService.findOne(attendanceId);
+  }
+
+  @Get('getAttendanceByTimeDuration')
+  getAttendanceByTimeDuration(
+    @Request() req,
+    @Body() getAttendance: getAttendance,
+  ) {
+    return this.attendanceService.getAttendanceByTimeDuration(
+      getAttendance,
+      req,
+    );
   }
 
   @Patch(':attendanceId')

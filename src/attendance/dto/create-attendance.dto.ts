@@ -10,3 +10,12 @@ export class CreateAttendanceDto {
   @IsNotEmpty()
   checkOut?: Date;
 }
+
+export class getAttendance {
+  @ApiProperty()
+  @IsNotEmpty()
+  start_date: Date;
+  @ApiProperty()
+  @IsNotEmpty()
+  end_date: Date;
+}
