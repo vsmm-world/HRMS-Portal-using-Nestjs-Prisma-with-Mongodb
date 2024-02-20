@@ -1,15 +1,92 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateLeaveDto } from './dto/create-leave.dto';
+import { BulkApprove, CreateLeaveDto } from './dto/create-leave.dto';
 import { UpdateLeaveDto } from './dto/update-leave.dto';
 import * as postmark from 'postmark';
 import { env } from 'process';
 
 @Injectable()
 export class LeaveService {
+  bulkReject(bulkApprove: BulkApprove, req: any) {
+    const chekAdmin = this.chekAdmin(req);
+    if (!chekAdmin) {
+      throw new ForbiddenException(
+        'You are not authorized to perform this action',
+      );
+    }
+    const ids = bulkApprove.ids;
+    ids.forEach(async (id) => {
+      const leave = await this.prisma.leaveRequest.findUnique({
+        where: { id },
+      });
+      if (!leave) {
+        throw new NotFoundException(`Leave request with ID ${id} not found`);
+      }
+      const updatedLeave = await this.prisma.leaveRequest.update({
+        where: { id },
+        data: { status: 'rejected' },
+      });
+      const user = await this.prisma.user.findFirst({
+        where: { id: leave.userId, isDeleted: false },
+      });
+      const email = user.email;
+      const client = new postmark.ServerClient(env.POST_MARK_API_KEY);
+      const mail = {
+        From: 'rushi@syscreations.com',
+        To: `${email},`,
+        Subject: `Your leave application for ${leave.startDate} to ${leave.endDate} has been rejected`,
+        TextBody: `Hi there,\n\nThis is to inform you that your leave application for ${leave.startDate} to ${leave.endDate} has been Rejected.\n\nThanks,\nAdmin`,
+      };
+      return client.sendEmail(mail);
+    });
+    return { statusCode: 200, message: 'All leaves have been rejected.' };
+  }
+
+  bulkApprove(bulkApprove: BulkApprove, req: any) {
+    const chekAdmin = this.chekAdmin(req);
+    if (!chekAdmin) {
+      throw new ForbiddenException(
+        'You are not authorized to perform this action',
+      );
+    }
+    const ids = bulkApprove.ids;
+    ids.forEach(async (id) => {
+      const leave = await this.prisma.leaveRequest.findUnique({
+        where: { id },
+      });
+      if (!leave) {
+        throw new NotFoundException(`Leave request with ID ${id} not found`);
+      }
+      const updatedLeave = await this.prisma.leaveRequest.update({
+        where: { id },
+        data: { status: 'approved' },
+      });
+      const user = await this.prisma.user.findFirst({
+        where: { id: leave.userId, isDeleted: false },
+      });
+      const email = user.email;
+      const client = new postmark.ServerClient(env.POST_MARK_API_KEY);
+      const mail = {
+        From: 'rushi@syscreations.com',
+        To: email,
+        Subject: `Your leave application for ${leave.startDate} to ${leave.endDate} has been approved`,
+        TextBody: `Hi there,\n\nThis is to inform you that your leave application for ${leave.startDate} to ${leave.endDate} has been approved.\n\nThanks,\nAdmin`,
+      };
+      await client.sendEmail(mail);
+    });
+
+    return {
+      statusCode: 200,
+      message: 'All leaves have been approved',
+    };
+  }
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createLeaveDto: CreateLeaveDto, req: any) {
+  async create(createLeaveDto: CreateLeaveDto, req: any ,type:any) {
     const { user } = req;
     const chek = await this.prisma.user.findUnique({
       where: { id: user.id, isDeleted: false },
@@ -20,6 +97,7 @@ export class LeaveService {
         ...createLeaveDto,
         userId: chek.id,
         status: 'pending',
+        leaveType: type,
       },
     });
     const client = new postmark.ServerClient(env.POST_MARK_API_KEY);
@@ -58,7 +136,9 @@ export class LeaveService {
     }
     return this.prisma.leaveRequest.update({
       where: { id },
-      data: updateLeaveDto,
+      data: {
+        ...updateLeaveDto,
+      },
     });
   }
 
@@ -78,6 +158,12 @@ export class LeaveService {
   }
 
   async approve(approvalDto, req: any) {
+    const chekAdmin = this.chekAdmin(req);
+    if (!chekAdmin) {
+      throw new ForbiddenException(
+        'You are not authorized to perform this action',
+      );
+    }
     const { id } = approvalDto;
     const leave = await this.prisma.leaveRequest.findUnique({
       where: { id },
@@ -105,6 +191,12 @@ export class LeaveService {
     return updatedLeave;
   }
   async reject(approvalDto, req: any) {
+    const chekAdmin = this.chekAdmin(req);
+    if (!chekAdmin) {
+      throw new ForbiddenException(
+        'You are not authorized to perform this action',
+      );
+    }
     const { id } = approvalDto;
     const leave = await this.prisma.leaveRequest.findUnique({
       where: { id },
@@ -131,5 +223,26 @@ export class LeaveService {
     await client.sendEmail(mail);
 
     return updatedLeave;
+  }
+
+  async chekAdmin(req: any) {
+    const { user } = req;
+    const chek = await this.prisma.user.findUnique({
+      where: { id: user.id, isDeleted: false },
+    });
+    if (!chek) {
+      return false;
+    }
+    const chekRole = await this.prisma.role.findFirst({
+      where: {
+        id: chek.roleId,
+        isDeleted: false,
+      },
+    });
+    if (chekRole.name === 'admin') {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
