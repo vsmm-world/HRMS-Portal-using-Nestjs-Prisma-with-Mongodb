@@ -35,7 +35,7 @@ export class AdministratorService {
       },
     });
     return this.prisma.employee.create({
-      data: { ...createAdministratorDto },
+      data: { ...createAdministratorDto, },
     });
   }
 

@@ -11,7 +11,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { LeaveService } from './leave.service';
-import { ApprovalDto, BulkApprove, CreateLeaveDto } from './dto/create-leave.dto';
+import {
+  ApprovalDto,
+  BulkApprove,
+  CommentOnLeaveDto,
+  CreateLeaveDto,
+} from './dto/create-leave.dto';
 import { UpdateLeaveDto } from './dto/update-leave.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -27,8 +32,16 @@ export class LeaveController {
 
   @Post()
   @ApiQuery({ name: 'type', enum: LeaveTypes })
-  create(@Query('type') type: LeaveTypes,@Body() createLeaveDto: CreateLeaveDto, @Request() req) {
-    return this.leaveService.create(createLeaveDto, req,type);
+  create(
+    @Query('type') type: LeaveTypes,
+    @Body() createLeaveDto: CreateLeaveDto,
+    @Request() req,
+  ) {
+    return this.leaveService.create(createLeaveDto, req, type);
+  }
+  @Post('commentOnLeave')
+  commentOnLeave(@Body() commentOnLeaveDto: CommentOnLeaveDto, @Request() req) {
+    return this.leaveService.commentOnLeave(commentOnLeaveDto, req);
   }
   @Post('approve')
   approve(@Body() approvalDto: ApprovalDto, @Request() req) {
@@ -50,7 +63,6 @@ export class LeaveController {
   findAll() {
     return this.leaveService.findAll();
   }
-  
 
   @Get(':leaveId')
   findOne(@Param('leaveId') leaveId: string) {
@@ -58,7 +70,10 @@ export class LeaveController {
   }
 
   @Patch(':leaveId')
-  update(@Param('leaveId') leaveId: string, @Body() updateLeaveDto: UpdateLeaveDto) {
+  update(
+    @Param('leaveId') leaveId: string,
+    @Body() updateLeaveDto: UpdateLeaveDto,
+  ) {
     return this.leaveService.update(leaveId, updateLeaveDto);
   }
 

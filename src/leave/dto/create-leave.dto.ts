@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 
-
 export class CreateLeaveDto {
   @ApiProperty()
   @IsNotEmpty()
@@ -12,6 +11,9 @@ export class CreateLeaveDto {
   @ApiProperty()
   @IsNotEmpty()
   endDate: Date;
+  @ApiProperty()
+  @IsNotEmpty()
+  alsoNotify: Array<string>;
 }
 
 export class ApprovalDto {
@@ -24,4 +26,14 @@ export class BulkApprove {
   @ApiProperty()
   @IsNotEmpty()
   ids: string[];
+}
+
+export class CommentOnLeaveDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  LeaveId: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  comment: string;
 }
