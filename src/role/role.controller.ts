@@ -10,10 +10,11 @@ import {
   Request,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
-import { AssignRoleDto, CreateRoleDto } from './dto/create-role.dto';
+import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { AssignRoleDto } from './dto/assign.role.dto';
 
 @ApiTags('Roles')
 @UseGuards(AuthGuard('jwt'))

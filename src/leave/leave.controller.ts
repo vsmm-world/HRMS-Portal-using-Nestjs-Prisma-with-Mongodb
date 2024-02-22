@@ -11,17 +11,15 @@ import {
   Query,
 } from '@nestjs/common';
 import { LeaveService } from './leave.service';
-import {
-  ApprovalDto,
-  BulkApprove,
-  CommentOnLeaveDto,
-  CreateLeaveDto,
-} from './dto/create-leave.dto';
+import { CreateLeaveDto } from './dto/create-leave.dto';
 import { UpdateLeaveDto } from './dto/update-leave.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { LeaveTypes } from './dto/leave-types.enum';
 import { ApiQuery } from '@nestjs/swagger';
+import { CommentOnLeaveDto } from './dto/comment.leave.dto';
+import { ApprovalDto } from './dto/action.leave.dto';
+import { BulkAction } from './dto/bulk.action.dto';
 
 @ApiTags('Leaves')
 @UseGuards(AuthGuard('jwt'))
@@ -48,7 +46,7 @@ export class LeaveController {
     return this.leaveService.approve(approvalDto, req);
   }
   @Post('bulkapprove')
-  bulkApprove(@Body() bulkApprove: BulkApprove, @Request() req) {
+  bulkApprove(@Body() bulkApprove: BulkAction, @Request() req) {
     return this.leaveService.bulkApprove(bulkApprove, req);
   }
   @Post('reject')
@@ -56,8 +54,8 @@ export class LeaveController {
     return this.leaveService.reject(approvalDto, req);
   }
   @Post('bulkreject')
-  bulkReject(@Body() bulkApprove: BulkApprove, @Request() req) {
-    return this.leaveService.bulkReject(bulkApprove, req);
+  bulkReject(@Body() bulkReject: BulkAction, @Request() req) {
+    return this.leaveService.bulkReject(bulkReject, req);
   }
   @Get()
   findAll() {

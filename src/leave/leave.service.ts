@@ -4,11 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  BulkApprove,
-  CommentOnLeaveDto,
-  CreateLeaveDto,
-} from './dto/create-leave.dto';
+import { CreateLeaveDto } from './dto/create-leave.dto';
 import { UpdateLeaveDto } from './dto/update-leave.dto';
 import * as postmark from 'postmark';
 import { env } from 'process';
@@ -17,6 +13,9 @@ import { ForbiddenResource } from 'src/shared/keys/forbidden.resource';
 import { LeaveKeys } from 'src/shared/keys/leave.keys';
 import { UserKeys } from 'src/shared/keys/user.keys';
 import { EmployeeKeys } from 'src/shared/keys/employee.keys';
+import { LeaveStatus } from './dto/enum.leaveStatus';
+import { CommentOnLeaveDto } from './dto/comment.leave.dto';
+import { BulkAction } from './dto/bulk.action.dto';
 
 @Injectable()
 export class LeaveService {
@@ -59,35 +58,34 @@ export class LeaveService {
     return updatedLeave;
   }
 
-  async bulkReject(bulkApprove: BulkApprove, req: any) {
+  async bulkReject(bulkReject: BulkAction, req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
       throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
-    const ids = bulkApprove.ids;
+    const ids = bulkReject.ids;
     ids.forEach(async (id) => {
       const leave = await this.prisma.leaveRequest.findUnique({
         where: { id },
+        include: { User: true },
       });
       if (!leave) {
         throw new NotFoundException(LeaveKeys.NotFound);
       }
       const updatedLeave = await this.prisma.leaveRequest.update({
         where: { id },
-        data: { status: 'rejected' },
+        data: { status: LeaveStatus.REJECTED },
       });
-      const user = await this.prisma.user.findFirst({
-        where: { id: leave.userId, isDeleted: false },
-      });
+
       const content = `Your leave application for ${leave.startDate} to ${leave.endDate} has been Rejected`;
-      const to = user.email;
-      const subject = `${user.name} here is your leave status`;
+      const to = leave.User.email;
+      const subject = `${leave.User.name} here is your leave status`;
       await this.mailService(content, to, subject);
     });
     return { statusCode: 200, message: LeaveKeys.AllRejected };
   }
 
-  async bulkApprove(bulkApprove: BulkApprove, req: any) {
+  async bulkApprove(bulkApprove: BulkAction, req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
       throw new ForbiddenException(ForbiddenResource.AccessDenied);
@@ -102,7 +100,7 @@ export class LeaveService {
       }
       const updatedLeave = await this.prisma.leaveRequest.update({
         where: { id },
-        data: { status: 'approved' },
+        data: { status: LeaveStatus.APPROVED },
       });
       const user = await this.prisma.user.findFirst({
         where: { id: leave.userId, isDeleted: false },
@@ -145,7 +143,7 @@ export class LeaveService {
         endDate,
         reason,
         userId: chek.id,
-        status: 'pending',
+        status: LeaveStatus.PENDING,
         leaveType: type,
         mentionedEmplooyes: employeesEmailList,
       },
@@ -211,28 +209,22 @@ export class LeaveService {
     const { id } = approvalDto;
     const leave = await this.prisma.leaveRequest.findUnique({
       where: { id },
+      include: { User: true },
     });
     if (!leave) {
       throw new NotFoundException(LeaveKeys.NotFound);
     }
-    // Implement approval logic here, such as updating the status to 'approved'
-
     const updatedLeave = await this.prisma.leaveRequest.update({
       where: { id },
-      data: { status: 'approved' },
-    });
-    const user = await this.prisma.user.findFirst({
-      where: { id: leave.userId, isDeleted: false },
+      data: { status: LeaveStatus.APPROVED },
     });
 
-    const leaveCount = await this.getAvailableLeaves(user.id);
+    const leaveCount = await this.getAvailableLeaves(leave.User.id);
     const updatedLeaveCount = leaveCount - 1;
-    await this.updateLeaveCount(user.id, updatedLeaveCount);
-
-    const email = user.email;
+    await this.updateLeaveCount(leave.User.id, updatedLeaveCount);
     const content = `Your leave application for ${leave.startDate} to ${leave.endDate} has been Approved`;
-    const to = user.email;
-    const subject = `${user.name} here is your leave status`;
+    const to = leave.User.email;
+    const subject = `${leave.User.name} here is your leave status`;
 
     await this.mailService(content, to, subject);
     return updatedLeave;
@@ -245,22 +237,19 @@ export class LeaveService {
     const { id } = approvalDto;
     const leave = await this.prisma.leaveRequest.findUnique({
       where: { id },
+      include: { User: true },
     });
     if (!leave) {
       throw new NotFoundException(LeaveKeys.NotFound);
     }
-    // Implement approval logic here, such as updating the status to 'approved'
     const updatedLeave = await this.prisma.leaveRequest.update({
       where: { id },
-      data: { status: 'rejected' },
+      data: { status: LeaveStatus.REJECTED },
     });
-    const user = await this.prisma.user.findFirst({
-      where: { id: leave.userId, isDeleted: false },
-    });
-    const email = user.email;
+
     const content = `Your leave application for ${leave.startDate} to ${leave.endDate} has been Rejected`;
-    const to = user.email;
-    const subject = `${user.name} here is your leave status`;
+    const to = leave.User.email;
+    const subject = `${leave.User.name} here is your leave status`;
     await this.mailService(content, to, subject);
 
     return updatedLeave;

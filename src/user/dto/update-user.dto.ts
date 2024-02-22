@@ -10,6 +10,7 @@ import {
 export class UpdateUserDto {
   @ApiProperty()
   name?: string;
+  
   @ApiProperty()
   @Validate(CustomEmailValidator, {
     message: 'Invalid email format (e.g. example@test.com )',

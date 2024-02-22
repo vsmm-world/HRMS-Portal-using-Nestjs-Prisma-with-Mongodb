@@ -4,7 +4,7 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { CreateAuthDto, verifyOTPDto } from './dto/create-auth.dto';
+import { CreateAuthDto } from './dto/create-auth.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { env } from 'process';
@@ -13,6 +13,7 @@ import * as postmark from 'postmark';
 import * as otpGenerator from 'otp-generator';
 import { UserKeys } from 'src/shared/keys/user.keys';
 import { AuthKeys } from 'src/shared/keys/auth.keys';
+import { verifyOTPDto } from './dto/verify.otp.dto';
 
 @Injectable()
 export class AuthService {

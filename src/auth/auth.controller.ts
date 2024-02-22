@@ -7,9 +7,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto, verifyOTPDto } from './dto/create-auth.dto';
+import { CreateAuthDto } from './dto/create-auth.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { verifyOTPDto } from './dto/verify.otp.dto';
 
 @ApiTags('Authentications')
 @Controller('auth')

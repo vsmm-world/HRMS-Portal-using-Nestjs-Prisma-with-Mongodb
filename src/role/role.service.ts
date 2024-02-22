@@ -7,12 +7,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AssignRoleDto, CreateRoleDto } from './dto/create-role.dto';
+import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { ChekAdmin } from 'src/shared/methods/check.admin';
 import { ForbiddenResource } from 'src/shared/keys/forbidden.resource';
 import { UserKeys } from 'src/shared/keys/user.keys';
 import { RoleKeys } from 'src/shared/keys/role.keys';
+import { AssignRoleDto } from './dto/assign.role.dto';
 
 @Injectable()
 export class RoleService {

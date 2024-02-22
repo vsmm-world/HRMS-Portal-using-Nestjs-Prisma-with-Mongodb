@@ -21,12 +21,3 @@ export class CreateAuthDto {
   password: string;
 }
 
-export class verifyOTPDto {
-  @ApiProperty()
-  @IsNotEmpty()
-  otp: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  otpRef: string;
-}

@@ -15,25 +15,3 @@ export class CreateLeaveDto {
   @IsNotEmpty()
   alsoNotify: Array<string>;
 }
-
-export class ApprovalDto {
-  @ApiProperty()
-  @IsNotEmpty()
-  id: string;
-}
-
-export class BulkApprove {
-  @ApiProperty()
-  @IsNotEmpty()
-  ids: string[];
-}
-
-export class CommentOnLeaveDto {
-  @ApiProperty()
-  @IsNotEmpty()
-  LeaveId: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  comment: string;
-}
