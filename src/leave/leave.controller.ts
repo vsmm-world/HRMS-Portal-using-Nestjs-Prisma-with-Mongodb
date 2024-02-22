@@ -70,6 +70,7 @@ export class LeaveController {
   }
 
   @Patch(':leaveId')
+  @ApiQuery({ name: 'type', enum: LeaveTypes })
   update(
     @Param('leaveId') leaveId: string,
     @Body() updateLeaveDto: UpdateLeaveDto,

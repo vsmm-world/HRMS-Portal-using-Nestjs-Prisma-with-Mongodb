@@ -10,10 +10,7 @@ import {
   Request,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
-import {
-  CreateAttendanceDto,
-  getAttendance,
-} from './dto/create-attendance.dto';
+import { getAttendance } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
