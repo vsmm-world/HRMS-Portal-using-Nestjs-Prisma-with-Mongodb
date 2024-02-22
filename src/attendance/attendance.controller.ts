@@ -8,11 +8,12 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { getAttendance } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
 @UseGuards(AuthGuard('jwt'))
@@ -31,25 +32,30 @@ export class AttendanceController {
   }
 
   @Get()
-  findAll(@Request() req) {
-    return this.attendanceService.findAll(req);
+  @ApiQuery({ name: 'start_date', required: false, type: Date })
+  @ApiQuery({ name: 'end_date', required: false, type: Date })
+  findAll(
+    @Request() req,
+    @Query('start_date') start_date?: Date,
+    @Query('end_date') end_date?: Date,
+  ) {
+    return this.attendanceService.findAll(req ,start_date, end_date);
   }
 
   @Get(':attendanceId')
-  findOne(@Param('attendanceId') attendanceId: string) {
+  async findOne(@Param('attendanceId') attendanceId: string) {
     return this.attendanceService.findOne(attendanceId);
   }
-
-  @Get('getAttendanceByTimeDuration')
-  getAttendanceByTimeDuration(
-    @Request() req,
-    @Body() getAttendance: getAttendance,
-  ) {
-    return this.attendanceService.getAttendanceByTimeDuration(
-      getAttendance,
-      req,
-    );
-  }
+  // @Get('getAttendanceByTimeDuration')
+  // getAttendanceByTimeDuration(
+  //   @Request() req,
+  //   @Body() getAttendance: getAttendance,
+  // ) {
+  //   return this.attendanceService.getAttendanceByTimeDuration(
+  //     getAttendance,
+  //     req,
+  //   );
+  // }
 
   @Patch(':attendanceId')
   update(

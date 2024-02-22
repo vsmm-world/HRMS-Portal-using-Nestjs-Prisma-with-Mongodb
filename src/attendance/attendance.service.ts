@@ -50,7 +50,10 @@ export class AttendanceService {
       },
     });
   }
-  async findAll(req: any) {
+  async findAll(req: any, start_date: Date, end_date: Date) {
+    if (start_date && end_date) {
+      return this.getAttendanceByTimeDuration({ start_date, end_date }, req);
+    }
     const { user } = req;
     return this.prisma.attendanceRecord.findMany({ where: { id: user.id } });
   }
