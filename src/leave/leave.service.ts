@@ -12,6 +12,7 @@ import {
 import { UpdateLeaveDto } from './dto/update-leave.dto';
 import * as postmark from 'postmark';
 import { env } from 'process';
+import { ChekAdmin } from 'src/shared/methods/check.admin';
 
 @Injectable()
 export class LeaveService {
@@ -57,11 +58,9 @@ export class LeaveService {
   }
 
   async bulkReject(bulkApprove: BulkApprove, req: any) {
-    const chekAdmin = this.chekAdmin(req);
+    const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException(
-        'You are not authorized to perform this action',
-      );
+      throw new ForbiddenException("You don't have permission");
     }
     const ids = bulkApprove.ids;
     ids.forEach(async (id) => {
@@ -86,12 +85,10 @@ export class LeaveService {
     return { statusCode: 200, message: 'All leaves have been rejected.' };
   }
 
-  bulkApprove(bulkApprove: BulkApprove, req: any) {
-    const chekAdmin = this.chekAdmin(req);
+  async bulkApprove(bulkApprove: BulkApprove, req: any) {
+    const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException(
-        'You are not authorized to perform this action',
-      );
+      throw new ForbiddenException("You don't have permission");
     }
     const ids = bulkApprove.ids;
     ids.forEach(async (id) => {
@@ -205,11 +202,9 @@ export class LeaveService {
   }
 
   async approve(approvalDto, req: any) {
-    const chekAdmin = this.chekAdmin(req);
+    const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException(
-        'You are not authorized to perform this action',
-      );
+      throw new ForbiddenException("You don't have permission");
     }
     const { id } = approvalDto;
     const leave = await this.prisma.leaveRequest.findUnique({
@@ -241,11 +236,9 @@ export class LeaveService {
     return updatedLeave;
   }
   async reject(approvalDto, req: any) {
-    const chekAdmin = this.chekAdmin(req);
+    const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException(
-        'You are not authorized to perform this action',
-      );
+      throw new ForbiddenException("You don't have permission");
     }
     const { id } = approvalDto;
     const leave = await this.prisma.leaveRequest.findUnique({
@@ -269,27 +262,6 @@ export class LeaveService {
     await this.mailService(content, to, subject);
 
     return updatedLeave;
-  }
-
-  async chekAdmin(req: any) {
-    const { user } = req;
-    const chek = await this.prisma.user.findUnique({
-      where: { id: user.id, isDeleted: false },
-    });
-    if (!chek) {
-      return false;
-    }
-    const chekRole = await this.prisma.role.findFirst({
-      where: {
-        id: chek.roleId,
-        isDeleted: false,
-      },
-    });
-    if (chekRole.name === 'admin') {
-      return true;
-    } else {
-      return false;
-    }
   }
 
   async getLeaveByUser(req: any) {

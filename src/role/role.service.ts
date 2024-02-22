@@ -9,6 +9,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { AssignRoleDto, CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { ChekAdmin } from 'src/shared/methods/check.admin';
 
 @Injectable()
 export class RoleService {
@@ -43,15 +44,9 @@ export class RoleService {
     });
   }
   async create(createRoleDto: CreateRoleDto, req: any) {
-    const { user } = req;
-    const admin = await this.prisma.user.findUnique({
-      where: { id: user.id, isDeleted: false },
-    });
-    const chekRole = await this.prisma.role.findFirst({
-      where: { id: admin.roleId },
-    });
-    if (chekRole.name != 'admin') {
-      throw new UnauthorizedException('Acces Denied');
+    const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
+    if (!chekAdmin) {
+      throw new ForbiddenException("You don't have permission ");
     }
     return this.prisma.role.create({
       data: {
@@ -75,6 +70,10 @@ export class RoleService {
   }
 
   async update(id: string, updateRoleDto: UpdateRoleDto, req: any) {
+    const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
+    if (!chekAdmin) {
+      throw new ForbiddenException("You don't have permission ");
+    }
     const existingRole = await this.prisma.role.findUnique({
       where: { id },
     });
@@ -88,23 +87,17 @@ export class RoleService {
   }
 
   async remove(id: string, req: any) {
-    const { user } = req;
-    const admin = await this.prisma.user.findUnique({
-      where: { id: user.id, isDeleted: false },
-    });
-    const chekRole = await this.prisma.role.findFirst({
-      where: { id: admin.roleId },
-    });
-
-    if (chekRole.name != 'admin') {
-      throw new UnauthorizedException();
+    const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
+    if (!chekAdmin) {
+      throw new ForbiddenException(
+        "You don't have permission to delete a Role",
+      );
     }
-
     const role = await this.prisma.role.findUnique({
       where: { id },
     });
     if (!role) {
-      throw new NotFoundException(`Role with ID ${id} not found`);
+      throw new NotFoundException(`Role not found`);
     }
     return this.prisma.role.delete({
       where: { id },

@@ -18,9 +18,6 @@ import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
-@ApiTags('Attendance')
-@UseGuards(AuthGuard('jwt'))
-@ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
 @Controller('attendance')

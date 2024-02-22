@@ -6,17 +6,16 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service'; // Import PrismaService for database interaction
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { getAttendance } from './dto/create-attendance.dto';
+import { ChekAdmin } from 'src/shared/methods/check.admin';
 
 @Injectable()
 export class AttendanceService {
   constructor(private readonly prisma: PrismaService) {}
 
   async chekOut(req: any) {
-    const chek = this.chekAdmin(req);
-    if (chek) {
-      throw new ForbiddenException(
-        'You are an Administrator, you can not perform this action.',
-      );
+    const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
+    if (!chekAdmin) {
+      throw new ForbiddenException("You don't have permission");
     }
     const { user } = req;
     const attendanceRecord = await this.prisma.attendanceRecord.findFirst({
@@ -35,12 +34,10 @@ export class AttendanceService {
       },
     });
   }
-  chekIn(req: any) {
-    const chek = this.chekAdmin(req);
-    if (chek) {
-      throw new ForbiddenException(
-        'You are an Administrator, you can not perform this action.',
-      );
+  async chekIn(req: any) {
+    const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
+    if (!chekAdmin) {
+      throw new ForbiddenException("You don't have permission");
     }
     const { user } = req;
     return this.prisma.attendanceRecord.create({
@@ -103,22 +100,5 @@ export class AttendanceService {
         isDeleted: true,
       },
     });
-  }
-
-  async chekAdmin(req) {
-    const { user } = req;
-    if (!user) {
-      return false;
-    }
-    const chekRole = await this.prisma.role.findFirst({
-      where: {
-        id: user.roleId,
-        isDeleted: false,
-      },
-    });
-    if (chekRole.name === 'Admin') {
-      return true;
-    }
-    return false;
   }
 }
