@@ -1,3 +1,3 @@
-export class ForbiddeResource {
-  static AccedDenide = 'Access denied';
+export class ForbiddenResource {
+  static AccesDenide = 'Access Denied';
 }
