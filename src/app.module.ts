@@ -6,10 +6,9 @@ import { LeaveModule } from './leave/leave.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { RoleModule } from './role/role.module';
 import { AuthModule } from './auth/auth.module';
-import { SoketModule } from './soket/soket.module';
 import { AdministratorModule } from './administrator/administrator.module';
 
 @Module({
-  imports: [PrismaModule, UserModule, EmployeeModule, LeaveModule, AttendanceModule, RoleModule, AuthModule, SoketModule, AdministratorModule],
+  imports: [PrismaModule, UserModule, EmployeeModule, LeaveModule, AttendanceModule, RoleModule, AuthModule,  AdministratorModule],
 })
 export class AppModule {}

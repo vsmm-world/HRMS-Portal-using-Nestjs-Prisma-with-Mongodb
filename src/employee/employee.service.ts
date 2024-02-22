@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import puppeteer from 'puppeteer';
 import handlebars from 'handlebars';
@@ -7,9 +11,58 @@ import * as postmark from 'postmark';
 import { env } from 'process';
 import { EmployeeKeys } from 'src/shared/keys/employee.keys';
 import { SalarySlipTemplate } from 'src/shared/template/salaryslip.template';
+import { createObjectCsvWriter } from 'csv-writer';
+import { Readable } from 'stream';
+import { ChekAdmin } from 'src/shared/methods/check.admin';
+import { ForbiddenResource } from 'src/shared/keys/forbidden.resource';
+import { MailSender } from 'src/shared/methods/mailSender';
+
 @Injectable()
 export class EmployeeService {
   constructor(private prisma: PrismaService) {}
+
+  async genrateCSV(req) {
+    const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
+    if (!chekAdmin) {
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
+    }
+    const employees = await this.prisma.employee.findMany({});
+    const csvWriter = createObjectCsvWriter({
+      path: `CSVFiles/${Date.now()}_EmployeeDetails.csv`,
+      header: [
+        { id: 'id', title: 'ID' },
+        { id: 'name', title: 'Name' },
+        { id: 'email', title: 'Email' },
+        { id: 'department', title: 'Department' },
+      ],
+    });
+    const records = employees.map((employee) => ({
+      id: employee.id,
+      name: employee.firstName,
+      email: employee.email,
+      department: employee.department,
+    }));
+
+    const outputStream = new Readable({
+      read() {
+        for (const record of records) {
+          this.push(
+            `${record.id},${record.name},${record.email},${record.department}\n`,
+          );
+        }
+        this.push(null);
+      },
+    });
+
+    const chunks: any[] = [];
+    outputStream.on('data', (chunk) => {
+      chunks.push(chunk);
+    });
+
+    await csvWriter.writeRecords(employees);
+
+    return Buffer.concat(chunks);
+  }
 
   async salary(req: any) {
     const { user } = req;
@@ -42,24 +95,19 @@ export class EmployeeService {
       fs.writeFileSync(fileName, pdfBuffer);
       console.log(`PDF saved as: ${fileName}`);
       await browser.close();
-      const client = new postmark.ServerClient(env.POST_MARK_API_KEY);
 
-      let message = new postmark.Models.Message(
-        'rushi@syscreations.com',
-        'Your Salary Slip From HRMS Portal',
-        'Find the attachment below',
-        'Find the attachment below',
-        `${user.email}`,
+      const email = employee.email;
+      const attachmentName = `EmployeeSalarySlip_${employee.firstName}_${Date.now()}.pdf`;
+      const subject = 'Your Salary Slip';
+      const message = `Please find your salary slip attached.`;
+
+      return await MailSender.SendMailWithAttachment(
+        email,
+        attachmentName,
+        pdfBuffer,
+        subject,
+        message,
       );
-
-      const attachment2 = new postmark.Models.Attachment(
-        'SalarySlip.pdf',
-        Buffer.from(pdfBuffer).toString('base64'),
-        'application/pdf',
-      );
-      message.Attachments = [attachment2];
-
-      client.sendEmail(message);
     }
 
     // Example usage:
