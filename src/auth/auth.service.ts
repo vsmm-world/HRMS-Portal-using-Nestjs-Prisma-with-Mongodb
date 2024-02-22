@@ -1,4 +1,9 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { CreateAuthDto, verifyOTPDto } from './dto/create-auth.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
@@ -6,6 +11,8 @@ import { env } from 'process';
 import * as bcrypt from 'bcrypt';
 import * as postmark from 'postmark';
 import * as otpGenerator from 'otp-generator';
+import { UserKeys } from 'src/shared/keys/user.keys';
+import { AuthKeys } from 'src/shared/keys/auth.keys';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +23,7 @@ export class AuthService {
   async whoami(req: any) {
     const { user } = req;
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new BadRequestException(UserKeys.NotFound);
     }
     const userSession = await this.prisma.userSession.findFirst({
       where: { userId: user.id, isDeleted: false },
@@ -29,7 +36,7 @@ export class AuthService {
   async logout(req: any) {
     const { user } = req;
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new BadRequestException(UserKeys.NotFound);
     }
     const session = await this.prisma.userSession.findFirst({
       where: {
@@ -44,7 +51,7 @@ export class AuthService {
 
     return {
       statusCode: 200,
-      message: 'Logged out successfully',
+      message: AuthKeys.LoggedOut,
     };
   }
   async validateOtp(verifyOTPDto: verifyOTPDto) {
@@ -71,7 +78,7 @@ export class AuthService {
 
       return { updatedUserSession, token };
     }
-    throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
+    throw new HttpException(AuthKeys.InvalidOtp, HttpStatus.BAD_REQUEST);
   }
 
   async login(createAuthDto: CreateAuthDto) {
@@ -120,7 +127,7 @@ export class AuthService {
           TemplateModel: {
             otp: otp,
           },
-          From: 'rushi@syscreations.com',
+          From: env.FROM_MAIL,
           To: user.email,
         };
 
@@ -131,7 +138,7 @@ export class AuthService {
         };
       }
     }
-    throw new BadRequestException('Invalid credentials');
+    throw new BadRequestException(AuthKeys.InvalidCredentials);
   }
 
   generatejwtToken(userId: string): string {

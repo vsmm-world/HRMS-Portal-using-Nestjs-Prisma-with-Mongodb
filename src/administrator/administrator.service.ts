@@ -8,6 +8,10 @@ import { CreateAdministratorDto } from './dto/create-administrator.dto';
 import { UpdateAdministratorDto } from './dto/update-administrator.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChekAdmin } from 'src/shared/methods/check.admin';
+import { ForbiddenResource } from 'src/shared/keys/forbidden.resource';
+import { UserKeys } from 'src/shared/keys/user.keys';
+import { EmployeeKeys } from 'src/shared/keys/employee.keys';
+import { env } from 'process';
 
 @Injectable()
 export class AdministratorService {
@@ -16,9 +20,7 @@ export class AdministratorService {
   async create(createAdministratorDto: CreateAdministratorDto, req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException(
-        "You don't have permission",
-      );
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const { userId } = createAdministratorDto;
 
@@ -27,7 +29,7 @@ export class AdministratorService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(UserKeys.NotFound);
     }
 
     const updatedUser = await this.prisma.user.update({
@@ -36,7 +38,7 @@ export class AdministratorService {
         isDeleted: false,
       },
       data: {
-        roleId: '65d24041d7ba66596aa57fa2',
+        roleId: env.EMPLOYEE_ID,
       },
     });
     return this.prisma.employee.create({
@@ -47,9 +49,7 @@ export class AdministratorService {
   async findAll(req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException(
-        "You don't have permission",
-      );
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     return this.prisma.employee.findMany({ where: { isDeleted: false } });
   }
@@ -57,15 +57,13 @@ export class AdministratorService {
   async findOne(id: string, req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException(
-        "You don't have permission",
-      );
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const employee = await this.prisma.employee.findUnique({
       where: { id },
     });
     if (!employee) {
-      throw new NotFoundException(`Employee with ID "${id}" not found`);
+      throw new NotFoundException(EmployeeKeys.NotFound);
     }
     return employee;
   }
@@ -77,9 +75,7 @@ export class AdministratorService {
   ) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException(
-        "You don't have permission",
-      );
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     let user = await this.findOne(id, req);
     user = { ...user, ...updateAdministratorDto };
@@ -92,9 +88,7 @@ export class AdministratorService {
   async remove(id: string, req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException(
-        "You don't have permission",
-      );
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     await this.prisma.employee.update({
       where: { id },
@@ -102,8 +96,7 @@ export class AdministratorService {
     });
     return {
       statusCode: 200,
-      message: 'Employee deleted successfully',
+      message: EmployeeKeys.Deleted,
     };
   }
-
 }

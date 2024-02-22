@@ -7,6 +7,8 @@ import { PrismaService } from 'src/prisma/prisma.service'; // Import PrismaServi
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { getAttendance } from './dto/create-attendance.dto';
 import { ChekAdmin } from 'src/shared/methods/check.admin';
+import { ForbiddenResource } from 'src/shared/keys/forbidden.resource';
+import { AttendanceKeys } from 'src/shared/keys/attandance.keys';
 
 @Injectable()
 export class AttendanceService {
@@ -15,7 +17,7 @@ export class AttendanceService {
   async chekOut(req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException("You don't have permission");
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const { user } = req;
     const attendanceRecord = await this.prisma.attendanceRecord.findFirst({
@@ -25,7 +27,7 @@ export class AttendanceService {
       },
     });
     if (!attendanceRecord) {
-      throw new NotFoundException('You have already checked out.');
+      throw new NotFoundException(AttendanceKeys.AlreadyCheckedOut);
     }
     return this.prisma.attendanceRecord.update({
       where: { id: attendanceRecord.id },
@@ -37,7 +39,7 @@ export class AttendanceService {
   async chekIn(req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException("You don't have permission");
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const { user } = req;
     return this.prisma.attendanceRecord.create({
@@ -58,7 +60,7 @@ export class AttendanceService {
       where: { id },
     });
     if (!attendance) {
-      throw new NotFoundException(`Attendance record with ID ${id} not found`);
+      throw new NotFoundException(AttendanceKeys.NotFound);
     }
     return attendance;
   }
@@ -79,7 +81,7 @@ export class AttendanceService {
       where: { id },
     });
     if (!existingAttendance) {
-      throw new NotFoundException(`Attendance record with ID ${id} not found`);
+      throw new NotFoundException(AttendanceKeys.NotFound);
     }
     return this.prisma.attendanceRecord.update({
       where: { id },
@@ -92,7 +94,7 @@ export class AttendanceService {
       where: { id },
     });
     if (!attendance) {
-      throw new NotFoundException(`Attendance record with ID ${id} not found`);
+      throw new NotFoundException(AttendanceKeys.NotFound);
     }
     return this.prisma.attendanceRecord.update({
       where: { id: attendance.id },

@@ -1,10 +1,16 @@
 // user.service.ts
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { UserKeys } from 'src/shared/keys/user.keys';
+import { env } from 'process';
 
 @Injectable()
 export class UserService {
@@ -19,10 +25,10 @@ export class UserService {
     });
 
     if (chek) {
-      throw new Error('Email already in use');
+      throw new ForbiddenException(UserKeys.EmailAlreadyUsed);
     }
     const user = await this.prisma.user.create({
-      data: { name, email, roleId: '65d2404bd7ba66596aa57fa3' },
+      data: { name, email, roleId: env.USER_ID },
     });
     const cred = await this.prisma.userCreadentials.create({
       data: {
@@ -43,7 +49,7 @@ export class UserService {
       where: { id, isDeleted: false },
     });
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(UserKeys.NotFound);
     }
     return user;
   }
@@ -53,7 +59,7 @@ export class UserService {
       where: { id },
     });
     if (!existingUser) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(UserKeys.NotFound);
     }
     return this.prisma.user.update({
       where: { id },
@@ -66,7 +72,7 @@ export class UserService {
       where: { id },
     });
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(UserKeys.NotFound);
     }
     return this.prisma.user.update({
       where: { id },

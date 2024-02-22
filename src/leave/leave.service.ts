@@ -13,6 +13,10 @@ import { UpdateLeaveDto } from './dto/update-leave.dto';
 import * as postmark from 'postmark';
 import { env } from 'process';
 import { ChekAdmin } from 'src/shared/methods/check.admin';
+import { ForbiddenResource } from 'src/shared/keys/forbidden.resource';
+import { LeaveKeys } from 'src/shared/keys/leave.keys';
+import { UserKeys } from 'src/shared/keys/user.keys';
+import { EmployeeKeys } from 'src/shared/keys/employee.keys';
 
 @Injectable()
 export class LeaveService {
@@ -29,16 +33,14 @@ export class LeaveService {
       where: { userId: user.id, isDeleted: false },
     });
     if (!curruntEmployee) {
-      throw new ForbiddenException('Yor are Not Employee to Comment on Leave');
+      throw new ForbiddenException(LeaveKeys.NoComment);
     }
     const mentioned = leave.mentionedEmplooyes;
     const mentionedEmployee = mentioned.find(
       (employee) => employee === curruntEmployee.email,
     );
     if (!mentionedEmployee) {
-      throw new ForbiddenException(
-        'You are not authorized to comment on leave',
-      );
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
 
     const leaveComment = [];
@@ -60,7 +62,7 @@ export class LeaveService {
   async bulkReject(bulkApprove: BulkApprove, req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException("You don't have permission");
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const ids = bulkApprove.ids;
     ids.forEach(async (id) => {
@@ -68,7 +70,7 @@ export class LeaveService {
         where: { id },
       });
       if (!leave) {
-        throw new NotFoundException(`Leave request with ID ${id} not found`);
+        throw new NotFoundException(LeaveKeys.NotFound);
       }
       const updatedLeave = await this.prisma.leaveRequest.update({
         where: { id },
@@ -82,13 +84,13 @@ export class LeaveService {
       const subject = `${user.name} here is your leave status`;
       await this.mailService(content, to, subject);
     });
-    return { statusCode: 200, message: 'All leaves have been rejected.' };
+    return { statusCode: 200, message: LeaveKeys.AllRejected };
   }
 
   async bulkApprove(bulkApprove: BulkApprove, req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException("You don't have permission");
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const ids = bulkApprove.ids;
     ids.forEach(async (id) => {
@@ -96,7 +98,7 @@ export class LeaveService {
         where: { id },
       });
       if (!leave) {
-        throw new NotFoundException(`Leave request with ID ${id} not found`);
+        throw new NotFoundException(LeaveKeys.NotFound);
       }
       const updatedLeave = await this.prisma.leaveRequest.update({
         where: { id },
@@ -117,7 +119,7 @@ export class LeaveService {
 
     return {
       statusCode: 200,
-      message: 'All leaves have been approved',
+      message: LeaveKeys.AllAproved,
     };
   }
   constructor(private readonly prisma: PrismaService) {}
@@ -128,12 +130,12 @@ export class LeaveService {
       where: { id: user.id, isDeleted: false },
     });
     if (!chek) {
-      throw new NotFoundException(`User with ID ${user.id} not found`);
+      throw new NotFoundException(UserKeys.NotFound);
     }
 
     const availableLeaves = await this.getAvailableLeaves(user.id);
     if (availableLeaves < 1) {
-      throw new ForbiddenException('You have no available leaves');
+      throw new ForbiddenException(LeaveKeys.OutOfLeaves);
     }
     const { alsoNotify, startDate, endDate, reason } = createLeaveDto;
     const employeesEmailList = await this.notifyEmployees(user.id, alsoNotify);
@@ -166,7 +168,7 @@ export class LeaveService {
       where: { id },
     });
     if (!leave) {
-      throw new NotFoundException(`Leave request with ID ${id} not found`);
+      throw new NotFoundException(LeaveKeys.NotFound);
     }
     return leave;
   }
@@ -176,7 +178,7 @@ export class LeaveService {
       where: { id },
     });
     if (!existingLeave) {
-      throw new NotFoundException(`Leave request with ID ${id} not found`);
+      throw new NotFoundException(LeaveKeys.NotFound);
     }
     return this.prisma.leaveRequest.update({
       where: { id },
@@ -191,7 +193,7 @@ export class LeaveService {
       where: { id },
     });
     if (!leave) {
-      throw new NotFoundException(`Leave request with ID ${id} not found`);
+      throw new NotFoundException(LeaveKeys.NotFound);
     }
     return this.prisma.leaveRequest.update({
       where: { id },
@@ -204,14 +206,14 @@ export class LeaveService {
   async approve(approvalDto, req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException("You don't have permission");
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const { id } = approvalDto;
     const leave = await this.prisma.leaveRequest.findUnique({
       where: { id },
     });
     if (!leave) {
-      throw new NotFoundException(`Leave request with ID ${id} not found`);
+      throw new NotFoundException(LeaveKeys.NotFound);
     }
     // Implement approval logic here, such as updating the status to 'approved'
 
@@ -238,14 +240,14 @@ export class LeaveService {
   async reject(approvalDto, req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
-      throw new ForbiddenException("You don't have permission");
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const { id } = approvalDto;
     const leave = await this.prisma.leaveRequest.findUnique({
       where: { id },
     });
     if (!leave) {
-      throw new NotFoundException(`Leave request with ID ${id} not found`);
+      throw new NotFoundException(LeaveKeys.NotFound);
     }
     // Implement approval logic here, such as updating the status to 'approved'
     const updatedLeave = await this.prisma.leaveRequest.update({
@@ -289,13 +291,13 @@ export class LeaveService {
       where: { id: userId, isDeleted: false },
     });
     if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
+      throw new NotFoundException(UserKeys.NotFound);
     }
     const employee = await this.prisma.employee.findFirst({
       where: { userId: userId, isDeleted: false },
     });
     if (!employee) {
-      throw new NotFoundException(`Employee with ID ${userId} not found`);
+      throw new NotFoundException(EmployeeKeys.NotFound);
     }
     return employee.availableLeaves;
   }
@@ -305,7 +307,7 @@ export class LeaveService {
       where: { userId: userId, isDeleted: false },
     });
     if (!employee) {
-      throw new NotFoundException(`Employee with ID ${userId} not found`);
+      throw new NotFoundException(EmployeeKeys.NotFound);
     }
     return this.prisma.employee.update({
       where: { id: employee.id },
@@ -318,7 +320,7 @@ export class LeaveService {
       where: { id: userId, isDeleted: false },
     });
     if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
+      throw new NotFoundException(UserKeys.NotFound);
     }
 
     const validEmployeeList = await this.validEmployees(employeeList);
