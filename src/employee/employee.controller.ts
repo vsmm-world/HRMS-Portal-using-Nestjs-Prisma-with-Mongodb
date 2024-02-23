@@ -22,7 +22,7 @@ import { Queue } from 'bull';
 export class EmployeeController {
   constructor(
     private readonly employeeService: EmployeeService,
-    @InjectQueue('mail') private mailQueue: Queue,
+    @InjectQueue('ravi') private mailQueue: Queue,
   ) {}
 
   @Get('salarySlip')
@@ -33,10 +33,9 @@ export class EmployeeController {
   @Get('genrateCSV')
   async genrateCSV(@Request() req) {
     const userId = req.user.id;
-
-    await this.mailQueue.add('sendMail', {
+     const data = await this.mailQueue.add('sendMail',{
       userId,
     });
-    return { message: 'Email is being sent with the CSV file attached.' };
+    return { data };
   }
 }

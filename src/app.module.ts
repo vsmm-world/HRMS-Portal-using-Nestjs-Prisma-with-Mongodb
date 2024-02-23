@@ -7,8 +7,24 @@ import { AttendanceModule } from './attendance/attendance.module';
 import { RoleModule } from './role/role.module';
 import { AuthModule } from './auth/auth.module';
 import { AdministratorModule } from './administrator/administrator.module';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
-  imports: [PrismaModule, UserModule, EmployeeModule, LeaveModule, AttendanceModule, RoleModule, AuthModule,  AdministratorModule],
+  imports: [
+    PrismaModule,
+    UserModule,
+    EmployeeModule,
+    LeaveModule,
+    AttendanceModule,
+    RoleModule,
+    AuthModule,
+    AdministratorModule,
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
+  ],
 })
 export class AppModule {}

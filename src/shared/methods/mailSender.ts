@@ -9,6 +9,7 @@ export class MailSender {
     subject,
     body,
   ) {
+    console.log('some one hit the mail sender');
     const client = new postmark.ServerClient(env.POST_MARK_API_KEY);
 
     let message = new postmark.Models.Message(

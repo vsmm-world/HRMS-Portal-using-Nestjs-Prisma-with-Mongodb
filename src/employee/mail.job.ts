@@ -4,37 +4,28 @@ import { Job } from 'bull';
 import { EmployeeService } from './employee.service';
 import { ChekAdmin } from 'src/shared/methods/check.admin';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ForbiddenResource } from 'src/shared/keys/forbidden.resource';
 import { createObjectCsvWriter } from 'csv-writer';
 import { Readable } from 'stream';
 import { MailSender } from 'src/shared/methods/mailSender';
+import { UserKeys } from 'src/shared/keys/user.keys';
 
-interface MailJobData {
-  userId: number;
-}
-
-@Processor('mail')
+@Processor('ravi')
 export class MailJob {
-  constructor(
-    private readonly mailerService: EmployeeService,
-    private prisma: PrismaService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  @Process()
+  @Process('sendMail')
   async sendMail(job: Job<{ userId: string }>) {
+    console.log(`New job: ${job.id} processing`);
     const { userId } = job.data;
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
 
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException(UserKeys.NotFound);
     }
-
-    const fileName = `EmployeeDetails_${Date.now()}.csv`;
-    const subject = 'Employee Details CSV';
-    const message = 'Please find the employee details attached.';
 
     const chekAdmin = await ChekAdmin.chekAdmin({ user }, this.prisma);
     if (!chekAdmin) {
@@ -52,6 +43,7 @@ export class MailJob {
       ],
     });
 
+    console.log(`New job: ${job.id} processing`);
     const records = employees.map((employee) => ({
       id: employee.id,
       name: employee.firstName,
@@ -78,6 +70,9 @@ export class MailJob {
     await csvWriter.writeRecords(employees);
 
     const csvData = Buffer.concat(chunks);
+    const fileName = `EmployeeDetails_${Date.now()}.csv`;
+    const subject = 'Employee Details CSV';
+    const message = 'Please find the employee details attached.';
 
     await MailSender.SendMailWithAttachment(
       user.email,
