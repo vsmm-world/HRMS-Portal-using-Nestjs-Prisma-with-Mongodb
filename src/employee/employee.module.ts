@@ -10,7 +10,7 @@ import { MailJob } from './mail.job';
     PrismaModule,
 
     BullModule.registerQueue({
-      name: 'ravi',
+      name: 'mail',
     }),
   ],
   controllers: [EmployeeController],

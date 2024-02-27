@@ -68,4 +68,31 @@ export class SalarySlipTemplate {
   </html>
   
   `;
+
+  static employeeTemplate = ` <html>
+  <head>
+      <style>
+          table {
+              width: 100%;
+              border-collapse: collapse;
+          }
+          th, td {
+              border: 1px solid #dddddd;
+              text-align: left;
+              padding: 8px;
+          }
+          th {
+              background-color: #f2f2f2;
+          }
+      </style>
+  </head>
+  <body>
+      <h1>Employee Details</h1>
+      <table>
+          <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Department</th>
+          </tr>`;
 }

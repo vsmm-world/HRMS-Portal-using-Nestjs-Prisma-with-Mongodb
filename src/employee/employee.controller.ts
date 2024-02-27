@@ -1,19 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Query, Request, UseGuards } from '@nestjs/common';
 import { EmployeeService } from './employee.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { FileTypeEnum } from './dto/file-type.enum';
+import { EmployeeKeys } from 'src/shared/keys/employee.keys';
 
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
@@ -22,7 +14,7 @@ import { Queue } from 'bull';
 export class EmployeeController {
   constructor(
     private readonly employeeService: EmployeeService,
-    @InjectQueue('ravi') private mailQueue: Queue,
+    @InjectQueue('mail') private mailQueue: Queue,
   ) {}
 
   @Get('salarySlip')
@@ -30,12 +22,20 @@ export class EmployeeController {
     return this.employeeService.salary(req);
   }
 
-  @Get('genrateCSV')
-  async genrateCSV(@Request() req) {
+  @Get('genrate-employeelist-doc')
+  @ApiQuery({ name: 'type', enum: FileTypeEnum })
+  async genrateCSV(@Request() req, @Query('type') type: FileTypeEnum) {
     const userId = req.user.id;
-     const data = await this.mailQueue.add('sendMail',{
+
+    if (type == 'pdf') {
+      await this.mailQueue.add('sendPDF', {
+        userId,
+      });
+      return { statusCode: 200, message: EmployeeKeys.MailedSoon };
+    }
+    const data = await this.mailQueue.add('sendCSV', {
       userId,
     });
-    return { data };
+    return { statusCode: 200, message: EmployeeKeys.MailedSoon };
   }
 }

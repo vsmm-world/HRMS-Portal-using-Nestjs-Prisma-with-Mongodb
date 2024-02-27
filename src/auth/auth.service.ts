@@ -27,11 +27,15 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException(UserKeys.NotFound);
     }
+    const fetchedUser = await this.prisma.user.findFirst({
+      where: { id: user.id, isDeleted: false },
+      include: { Role: true },
+    });
     const userSession = await this.prisma.userSession.findFirst({
       where: { userId: user.id, isDeleted: false },
     });
     return {
-      user,
+      user: fetchedUser,
       userSession,
     };
   }

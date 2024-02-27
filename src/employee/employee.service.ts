@@ -7,8 +7,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import puppeteer from 'puppeteer';
 import handlebars from 'handlebars';
 import * as fs from 'fs';
-import * as postmark from 'postmark';
-import { env } from 'process';
 import { EmployeeKeys } from 'src/shared/keys/employee.keys';
 import { SalarySlipTemplate } from 'src/shared/template/salaryslip.template';
 import { createObjectCsvWriter } from 'csv-writer';
