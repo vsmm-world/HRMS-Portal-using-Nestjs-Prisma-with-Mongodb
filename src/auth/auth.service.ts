@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -64,6 +65,9 @@ export class AuthService {
         isDeleted: false,
       },
     });
+    if (!userSession) {
+      throw new UnauthorizedException(AuthKeys.InvalidOtp);
+    }
     if (userSession.otp == otp) {
       const token = this.generatejwtToken(userSession.userId);
 
