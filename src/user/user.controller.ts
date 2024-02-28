@@ -38,7 +38,10 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @Patch(':userId')
-  update(@Param('userId') userId: string, @Body() updateUserDto: UpdateUserDto) {
+  update(
+    @Param('userId') userId: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     return this.userService.update(userId, updateUserDto);
   }
   @UseGuards(AuthGuard('jwt'))

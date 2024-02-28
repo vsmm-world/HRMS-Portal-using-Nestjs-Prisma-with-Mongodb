@@ -8,18 +8,12 @@ import {
 } from 'src/validator/custom-validator';
 
 export class UpdateUserDto {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   name?: string;
-  
-  @ApiProperty()
+
+  @ApiProperty({ required: false })
   @Validate(CustomEmailValidator, {
     message: 'Invalid email format (e.g. example@test.com )',
   })
   email?: string;
-
-  @ApiProperty()
-  @Validate(PasswordValidator, {
-    message: 'Password is not strong enough',
-  })
-  password?: string;
 }

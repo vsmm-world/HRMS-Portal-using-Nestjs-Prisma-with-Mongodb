@@ -1,8 +1,14 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { get } from 'http';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AdministratorKeys } from 'src/shared/keys/administator.keys';
+import { ForbiddenResource } from 'src/shared/keys/forbidden.resource';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,6 +19,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
   async validate(payload: any) {
+    try{
+    if (payload.sub == undefined) {
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
+    }
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
     });
@@ -31,5 +41,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
     return user;
+  }catch(err){
+    console.log('somethign goes wrong ' + err)
+  
   }
+}
 }

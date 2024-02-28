@@ -61,6 +61,7 @@ export class UserService {
     if (!existingUser) {
       throw new NotFoundException(UserKeys.NotFound);
     }
+    console.log('Running update user service');
     return this.prisma.user.update({
       where: { id },
       data: updateUserDto,

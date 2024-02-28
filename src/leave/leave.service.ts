@@ -158,7 +158,10 @@ export class LeaveService {
   }
 
   async findAll() {
-    return this.prisma.leaveRequest.findMany();
+    return this.prisma.leaveRequest.findMany({
+      where: { isDeleted: false },
+      include: { User: true },
+    });
   }
 
   async findOne(id: string) {
