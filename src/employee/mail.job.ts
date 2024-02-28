@@ -10,6 +10,7 @@ import { MailSender } from 'src/shared/methods/mailSender';
 import { UserKeys } from 'src/shared/keys/user.keys';
 import puppeteer from 'puppeteer';
 import { SalarySlipTemplate } from 'src/shared/template/salaryslip.template';
+import { EmployeeKeys } from 'src/shared/keys/employee.keys';
 
 @Processor('mail')
 export class MailJob {
@@ -72,8 +73,8 @@ export class MailJob {
 
     const csvData = Buffer.concat(chunks);
     const fileName = `EmployeeDetails_${Date.now()}.csv`;
-    const subject = 'Employee Details CSV';
-    const message = 'Please find the employee details attached.';
+    const subject = EmployeeKeys.CSVMailSubject;
+    const message = EmployeeKeys.MailMessage;
 
     await MailSender.SendMailWithAttachment(
       user.email,
@@ -109,8 +110,8 @@ export class MailJob {
     const pdfBuffer = await this.generatePDF(employeeData);
 
     const fileName = `EmployeeDetails_${Date.now()}.pdf`;
-    const subject = 'Employee Details PDF';
-    const message = 'Please find the employee details attached.';
+    const subject = EmployeeKeys.PDFMailSubject;
+    const message = EmployeeKeys.MailMessage;
     await MailSender.SendMailWithAttachment(
       user.email,
       fileName,
@@ -132,7 +133,6 @@ export class MailJob {
   }
   constructHTML(employeeData: any[]) {
     let html = SalarySlipTemplate.employeeTemplate;
-
     employeeData.forEach((employee) => {
       html += `
             <tr>
@@ -142,7 +142,6 @@ export class MailJob {
                 <td>${employee.department}</td>
             </tr>`;
     });
-
     html += `
             </table>
         </body>
