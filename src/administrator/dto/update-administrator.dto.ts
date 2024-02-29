@@ -3,27 +3,27 @@ import { Validate } from 'class-validator';
 import { CustomEmailValidator } from 'src/validator/custom-validator';
 
 export class UpdateAdministratorDto {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   userId?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   firstName?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   lastName?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @Validate(CustomEmailValidator, {
     message: 'Invalid email format (e.g. example@test.com )',
   })
   email?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   department?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   jobTitle?: string;
-  
-  @ApiProperty()
+
+  @ApiProperty({ required: false })
   contactInfo?: string;
 }

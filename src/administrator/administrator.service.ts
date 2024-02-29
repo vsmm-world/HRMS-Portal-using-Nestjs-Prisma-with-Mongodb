@@ -61,7 +61,7 @@ export class AdministratorService {
       throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const employee = await this.prisma.employee.findUnique({
-      where: { id },
+      where: { id, isDeleted: false },
     });
     if (!employee) {
       throw new NotFoundException(EmployeeKeys.NotFound);
@@ -78,11 +78,11 @@ export class AdministratorService {
     if (!chekAdmin) {
       throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
-    let user = await this.findOne(id, req);
-    user = { ...user, ...updateAdministratorDto };
     return this.prisma.employee.update({
       where: { id },
-      data: user,
+      data: {
+        ...updateAdministratorDto,
+      },
     });
   }
 
@@ -91,9 +91,13 @@ export class AdministratorService {
     if (!chekAdmin) {
       throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
-    await this.prisma.employee.update({
+    const deletedEmployee = await this.prisma.employee.update({
       where: { id },
       data: { isDeleted: true },
+    });
+    await this.prisma.user.update({
+      where: { id: deletedEmployee.userId },
+      data: { isDeleted: false, roleId: env.USER_ID, isEmployee: false },
     });
     return {
       statusCode: 200,

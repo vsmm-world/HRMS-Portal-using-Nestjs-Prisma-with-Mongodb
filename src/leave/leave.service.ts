@@ -213,10 +213,12 @@ export class LeaveService {
       throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const { id } = approvalDto;
+    console.log(id);
     const leave = await this.prisma.leaveRequest.findUnique({
-      where: { id },
+      where: { id, isDeleted: false },
       include: { User: true },
     });
+    console.log(leave);
     if (!leave) {
       throw new NotFoundException(LeaveKeys.NotFound);
     }

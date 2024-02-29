@@ -41,7 +41,10 @@ export class UserService {
   }
 
   async findAll() {
-    return this.prisma.user.findMany({ where: { isDeleted: false } });
+    return this.prisma.user.findMany({
+      where: { isDeleted: false },
+      include: { Role: true },
+    });
   }
 
   async findOne(id: string) {
@@ -61,7 +64,6 @@ export class UserService {
     if (!existingUser) {
       throw new NotFoundException(UserKeys.NotFound);
     }
-    console.log('Running update user service');
     return this.prisma.user.update({
       where: { id },
       data: updateUserDto,
