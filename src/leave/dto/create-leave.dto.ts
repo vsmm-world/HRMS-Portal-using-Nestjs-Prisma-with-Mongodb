@@ -11,7 +11,7 @@ export class CreateLeaveDto {
   @ApiProperty()
   @IsNotEmpty()
   endDate: Date;
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsNotEmpty()
   alsoNotify: Array<string>;
 }

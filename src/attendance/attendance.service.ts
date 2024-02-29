@@ -16,7 +16,7 @@ export class AttendanceService {
 
   async chekOut(req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
-    if (!chekAdmin) {
+    if (chekAdmin) {
       throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const { user } = req;
@@ -38,7 +38,7 @@ export class AttendanceService {
   }
   async chekIn(req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
-    if (!chekAdmin) {
+    if (chekAdmin) {
       throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const { user } = req;
@@ -55,7 +55,9 @@ export class AttendanceService {
       return this.getAttendanceByTimeDuration({ start_date, end_date }, req);
     }
     const { user } = req;
-    return this.prisma.attendanceRecord.findMany({ where: { id: user.id } });
+    return this.prisma.attendanceRecord.findMany({
+      where: { userId: user.id, isDeleted: false },
+    });
   }
 
   async findOne(id: string) {

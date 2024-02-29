@@ -31,7 +31,7 @@
     "@nestjs/platform-socket.io": "^10.3.3",
     "@nestjs/swagger": "^7.3.0",
     "@nestjs/websockets": "^10.3.3",
-    "@prisma/client": "^5.9.1",
+    "@prisma/client": "^5.10.2",
     "bcrypt": "^5.1.1",
     "bull": "^4.12.2",
     "class-transformer": "^0.5.1",

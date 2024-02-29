@@ -62,9 +62,9 @@ export class LeaveController {
     return this.leaveService.findAll();
   }
 
-  @Get(':leaveId')
-  findOne(@Param('leaveId') leaveId: string) {
-    return this.leaveService.findOne(leaveId);
+  @Get(':UserId')
+  findOne(@Param('UserId') UserId: string) {
+    return this.leaveService.findOne(UserId);
   }
 
   @Patch(':leaveId')

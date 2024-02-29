@@ -39,6 +39,7 @@ export class AdministratorService {
       },
       data: {
         roleId: env.EMPLOYEE_ID,
+        isEmployee: true,
       },
     });
     return this.prisma.employee.create({

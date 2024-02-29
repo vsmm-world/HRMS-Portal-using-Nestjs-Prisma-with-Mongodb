@@ -16,6 +16,7 @@ import { EmployeeKeys } from 'src/shared/keys/employee.keys';
 import { LeaveStatus } from './dto/enum.leaveStatus';
 import { CommentOnLeaveDto } from './dto/comment.leave.dto';
 import { BulkAction } from './dto/bulk.action.dto';
+import { compareSync } from 'bcrypt';
 
 @Injectable()
 export class LeaveService {
@@ -136,16 +137,16 @@ export class LeaveService {
       throw new ForbiddenException(LeaveKeys.OutOfLeaves);
     }
     const { alsoNotify, startDate, endDate, reason } = createLeaveDto;
-    const employeesEmailList = await this.notifyEmployees(user.id, alsoNotify);
+    // const employeesEmailList = await this.notifyEmployees(user.id, alsoNotify);
     const leave = await this.prisma.leaveRequest.create({
       data: {
-        startDate,
-        endDate,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
         reason,
         userId: chek.id,
         status: LeaveStatus.PENDING,
         leaveType: type,
-        mentionedEmplooyes: employeesEmailList,
+        // mentionedEmplooyes: employeesEmailList,
       },
     });
 
@@ -164,11 +165,11 @@ export class LeaveService {
     });
   }
 
-  async findOne(id: string) {
-    const leave = await this.prisma.leaveRequest.findUnique({
-      where: { id },
+  async findOne(UserId: string) {
+    const leave = await this.prisma.leaveRequest.findMany({
+      where: { userId: UserId, isDeleted: false },
     });
-    if (!leave) {
+    if (!leave[0] == undefined) {
       throw new NotFoundException(LeaveKeys.NotFound);
     }
     return leave;
@@ -185,6 +186,8 @@ export class LeaveService {
       where: { id },
       data: {
         ...updateLeaveDto,
+        startDate: new Date(updateLeaveDto.startDate),
+        endDate: new Date(updateLeaveDto.endDate),
       },
     });
   }
@@ -317,7 +320,8 @@ export class LeaveService {
 
     const validEmployeeList = await this.validEmployees(employeeList);
 
-    validEmployeeList.forEach(async (employee) => {
+    await validEmployeeList.forEach(async (employee) => {
+      console.log(employee);
       const content = `${user.name} has applied for leave`;
       const to = employee;
       const subject = `${user.name} has applied for leave`;
@@ -328,7 +332,7 @@ export class LeaveService {
   }
 
   async validEmployees(employeeList: any) {
-    const validEmployees = employeeList.map(async (email) => {
+    const validEmployees = await employeeList.map(async (email) => {
       const employee = await this.prisma.employee.findFirst({
         where: { email: email, isDeleted: false },
       });
@@ -338,8 +342,9 @@ export class LeaveService {
         return undefined;
       }
     });
-    const validEmployeesEmailList = validEmployees.filter(
+    const validEmployeesEmailList = await validEmployees.filter(
       (employee) => employee !== undefined,
+      console.log(validEmployees),
     );
     return validEmployeesEmailList;
   }
