@@ -35,7 +35,7 @@ export class AdministratorController {
     return this.administratorService.findAll(req);
   }
 
-  @Get(':employId')
+  @Get('getone/:employId')
   findOne(@Param('employId') id: string, @Request() req) {
     return this.administratorService.findOne(id, req);
   }
