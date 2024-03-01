@@ -39,7 +39,12 @@ export class AttendanceController {
     @Query('start_date') start_date?: Date,
     @Query('end_date') end_date?: Date,
   ) {
-    return this.attendanceService.findAll(req ,start_date, end_date);
+    return this.attendanceService.findAll(req, start_date, end_date);
+  }
+
+  @Get('chekIt/isCheckedIn')
+  isCheckedIn(@Request() req) {
+    return this.attendanceService.isCheckedIn(req);
   }
 
   @Get(':attendanceId')

@@ -14,6 +14,24 @@ import { AttendanceKeys } from 'src/shared/keys/attandance.keys';
 export class AttendanceService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async isCheckedIn(req: any) {
+    const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
+    if (chekAdmin) {
+      throw new ForbiddenException(ForbiddenResource.AccessDenied);
+    }
+    const { user } = req;
+    const record = await this.prisma.attendanceRecord.findFirst({
+      where: {
+        userId: user.id,
+        checkOut: null,
+      },
+    });
+    if (!record) {
+      return false;
+    }
+    return true;
+  }
+
   async chekOut(req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (chekAdmin) {

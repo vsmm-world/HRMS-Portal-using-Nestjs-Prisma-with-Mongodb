@@ -125,6 +125,7 @@ export class LeaveService {
 
   async create(createLeaveDto: CreateLeaveDto, req: any, type: any) {
     const { user } = req;
+    console.log(user);
     const chek = await this.prisma.user.findUnique({
       where: { id: user.id, isDeleted: false },
     });
@@ -213,12 +214,10 @@ export class LeaveService {
       throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
     const { id } = approvalDto;
-    console.log(id);
     const leave = await this.prisma.leaveRequest.findUnique({
       where: { id, isDeleted: false },
       include: { User: true },
     });
-    console.log(leave);
     if (!leave) {
       throw new NotFoundException(LeaveKeys.NotFound);
     }
@@ -284,10 +283,11 @@ export class LeaveService {
   }
 
   async getAvailableLeaves(userId: string) {
-    const user = await this.prisma.user.findFirst({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId, isDeleted: false },
     });
     if (!user) {
+
       throw new NotFoundException(UserKeys.NotFound);
     }
     const employee = await this.prisma.employee.findFirst({
