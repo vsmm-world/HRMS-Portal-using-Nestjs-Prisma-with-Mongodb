@@ -17,6 +17,7 @@ import { LeaveStatus } from './dto/enum.leaveStatus';
 import { CommentOnLeaveDto } from './dto/comment.leave.dto';
 import { BulkAction } from './dto/bulk.action.dto';
 import { compareSync } from 'bcrypt';
+import { ApprovalDto } from './dto/action.leave.dto';
 
 @Injectable()
 export class LeaveService {
@@ -99,21 +100,25 @@ export class LeaveService {
       if (!leave) {
         throw new NotFoundException(LeaveKeys.NotFound);
       }
-      const updatedLeave = await this.prisma.leaveRequest.update({
-        where: { id },
-        data: { status: LeaveStatus.APPROVED },
-      });
-      const user = await this.prisma.user.findFirst({
-        where: { id: leave.userId, isDeleted: false },
-      });
-      const leaveCount = await this.getAvailableLeaves(user.id);
-      const updatedLeaveCount = leaveCount - 1;
-      await this.updateLeaveCount(user.id, updatedLeaveCount);
+      try {
+        await this.prisma.leaveRequest.update({
+          where: { id },
+          data: { status: LeaveStatus.APPROVED },
+        });
+        const user = await this.prisma.user.findFirst({
+          where: { id: leave.userId, isDeleted: false },
+        });
+        const leaveCount = await this.getAvailableLeaves(user.id);
+        const updatedLeaveCount = leaveCount - 1;
+        await this.updateLeaveCount(user.id, updatedLeaveCount);
 
-      const content = `Your leave application for ${leave.startDate} to ${leave.endDate} has been Approved`;
-      const to = user.email;
-      const subject = `${user.name} here is your leave status`;
-      await this.mailService(content, to, subject);
+        const content = `Your leave application for ${leave.startDate} to ${leave.endDate} has been Approved`;
+        const to = user.email;
+        const subject = `${user.name} here is your leave status`;
+        await this.mailService(content, to, subject);
+      } catch (err) {
+        throw new NotFoundException(LeaveKeys.NotFound);
+      }
     });
 
     return {
@@ -138,7 +143,7 @@ export class LeaveService {
       throw new ForbiddenException(LeaveKeys.OutOfLeaves);
     }
     const { alsoNotify, startDate, endDate, reason } = createLeaveDto;
-    // const employeesEmailList = await this.notifyEmployees(user.id, alsoNotify);
+    const employeesEmailList = await this.notifyEmployees(user.id, alsoNotify);
     const leave = await this.prisma.leaveRequest.create({
       data: {
         startDate: new Date(startDate),
@@ -147,7 +152,7 @@ export class LeaveService {
         userId: chek.id,
         status: LeaveStatus.PENDING,
         leaveType: type,
-        // mentionedEmplooyes: employeesEmailList,
+        mentionedEmplooyes: employeesEmailList,
       },
     });
 
@@ -170,7 +175,7 @@ export class LeaveService {
     const leave = await this.prisma.leaveRequest.findMany({
       where: { userId: UserId, isDeleted: false },
     });
-    if (!leave[0] == undefined) {
+    if (leave[0] == undefined) {
       throw new NotFoundException(LeaveKeys.NotFound);
     }
     return leave;
@@ -208,7 +213,7 @@ export class LeaveService {
     });
   }
 
-  async approve(approvalDto, req: any) {
+  async approve(approvalDto: ApprovalDto, req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
       throw new ForbiddenException(ForbiddenResource.AccessDenied);
@@ -236,7 +241,7 @@ export class LeaveService {
     await this.mailService(content, to, subject);
     return updatedLeave;
   }
-  async reject(approvalDto, req: any) {
+  async reject(approvalDto: ApprovalDto, req: any) {
     const chekAdmin = await ChekAdmin.chekAdmin(req, this.prisma);
     if (!chekAdmin) {
       throw new ForbiddenException(ForbiddenResource.AccessDenied);
@@ -287,7 +292,6 @@ export class LeaveService {
       where: { id: userId, isDeleted: false },
     });
     if (!user) {
-
       throw new NotFoundException(UserKeys.NotFound);
     }
     const employee = await this.prisma.employee.findFirst({
@@ -320,17 +324,20 @@ export class LeaveService {
       throw new NotFoundException(UserKeys.NotFound);
     }
 
-    const validEmployeeList = await this.validEmployees(employeeList);
-
-    await validEmployeeList.forEach(async (employee) => {
-      console.log(employee);
+    const validEmployeeList = await employeeList.map(async (email: string) => {
+      console.log(email);
       const content = `${user.name} has applied for leave`;
-      const to = employee;
+      const to = email;
       const subject = `${user.name} has applied for leave`;
       await this.mailService(content, to, subject);
+      return email;
     });
 
-    return validEmployeeList;
+    const filteredEmployeeList = validEmployeeList.filter(
+      (employee) => employee !== undefined,
+    );
+
+    return filteredEmployeeList;
   }
 
   async validEmployees(employeeList: any) {
