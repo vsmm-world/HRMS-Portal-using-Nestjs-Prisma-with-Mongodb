@@ -18,9 +18,31 @@ import { CommentOnLeaveDto } from './dto/comment.leave.dto';
 import { BulkAction } from './dto/bulk.action.dto';
 import { compareSync } from 'bcrypt';
 import { ApprovalDto } from './dto/action.leave.dto';
+import { ReplyOnCommentDto } from './dto/reply.on-comment.dto';
 
 @Injectable()
 export class LeaveService {
+  async replyOnComment(replyOnCommentDto: ReplyOnCommentDto) {
+    const { LeaveId, CommentId, reply } = replyOnCommentDto;
+    const leave = await this.prisma.leaveRequest.findFirst({
+      where: { id: LeaveId, isDeleted: false },
+    });
+    if (!leave) {
+      throw new NotFoundException(LeaveKeys.NotFound);
+    }
+    const leaveComment = leave.comments;
+    leaveComment.forEach((comment: any) => {
+      if (comment.id === CommentId) {
+        comment.reply = reply;
+      }
+    });
+    return this.prisma.leaveRequest.update({
+      where: { id: LeaveId },
+      data: {
+        comments: leaveComment,
+      },
+    });
+  }
   async commentOnLeave(commentOnLeaveDto: CommentOnLeaveDto, req: any) {
     const { LeaveId, comment } = commentOnLeaveDto;
     const leave = await this.prisma.leaveRequest.findUnique({
@@ -44,11 +66,13 @@ export class LeaveService {
       throw new ForbiddenException(ForbiddenResource.AccessDenied);
     }
 
-    const leaveComment = [];
+    const leaveComment = leave.comments;
     leaveComment.push({
+      id: Date.now().toString(),
       comment,
       employeeId: curruntEmployee.id,
       employeeName: curruntEmployee.firstName,
+      reply: '',
     });
     const updatedLeave = await this.prisma.leaveRequest.update({
       where: { id: LeaveId },
@@ -130,7 +154,6 @@ export class LeaveService {
 
   async create(createLeaveDto: CreateLeaveDto, req: any, type: any) {
     const { user } = req;
-    console.log(user);
     const chek = await this.prisma.user.findUnique({
       where: { id: user.id, isDeleted: false },
     });
@@ -143,7 +166,8 @@ export class LeaveService {
       throw new ForbiddenException(LeaveKeys.OutOfLeaves);
     }
     const { alsoNotify, startDate, endDate, reason } = createLeaveDto;
-    const employeesEmailList = await this.notifyEmployees(user.id, alsoNotify);
+    const employeesEmailList = await this.validEmployees(alsoNotify);
+    await this.notifyEmployees(user.id, employeesEmailList);
     const leave = await this.prisma.leaveRequest.create({
       data: {
         startDate: new Date(startDate),
@@ -174,6 +198,7 @@ export class LeaveService {
   async findOne(UserId: string) {
     const leave = await this.prisma.leaveRequest.findMany({
       where: { userId: UserId, isDeleted: false },
+      include: { User: true },
     });
     if (leave[0] == undefined) {
       throw new NotFoundException(LeaveKeys.NotFound);
@@ -324,14 +349,15 @@ export class LeaveService {
       throw new NotFoundException(UserKeys.NotFound);
     }
 
-    const validEmployeeList = await employeeList.map(async (email: string) => {
-      console.log(email);
-      const content = `${user.name} has applied for leave`;
-      const to = email;
-      const subject = `${user.name} has applied for leave`;
-      await this.mailService(content, to, subject);
-      return email;
-    });
+    const validEmployeeList = await Promise.all(
+      employeeList.map(async (email: string) => {
+        const content = `${user.name} has applied for leave`;
+        const to = email;
+        const subject = `${user.name} has applied for leave`;
+        await this.mailService(content, to, subject);
+        return email;
+      }),
+    );
 
     const filteredEmployeeList = validEmployeeList.filter(
       (employee) => employee !== undefined,
@@ -341,19 +367,20 @@ export class LeaveService {
   }
 
   async validEmployees(employeeList: any) {
-    const validEmployees = await employeeList.map(async (email) => {
-      const employee = await this.prisma.employee.findFirst({
-        where: { email: email, isDeleted: false },
-      });
-      if (employee) {
-        return employee.email;
-      } else {
-        return undefined;
-      }
-    });
-    const validEmployeesEmailList = await validEmployees.filter(
+    const validEmployees = await Promise.all(
+      employeeList.map(async (email) => {
+        const employee = await this.prisma.employee.findFirst({
+          where: { email: email, isDeleted: false },
+        });
+        if (employee) {
+          return employee.email;
+        } else {
+          return undefined;
+        }
+      }),
+    );
+    const validEmployeesEmailList = validEmployees.filter(
       (employee) => employee !== undefined,
-      console.log(validEmployees),
     );
     return validEmployeesEmailList;
   }

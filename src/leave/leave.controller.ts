@@ -20,6 +20,7 @@ import { ApiQuery } from '@nestjs/swagger';
 import { CommentOnLeaveDto } from './dto/comment.leave.dto';
 import { ApprovalDto } from './dto/action.leave.dto';
 import { BulkAction } from './dto/bulk.action.dto';
+import { ReplyOnCommentDto } from './dto/reply.on-comment.dto';
 
 @ApiTags('Leaves')
 @UseGuards(AuthGuard('jwt'))
@@ -40,6 +41,10 @@ export class LeaveController {
   @Post('commentOnLeave')
   commentOnLeave(@Body() commentOnLeaveDto: CommentOnLeaveDto, @Request() req) {
     return this.leaveService.commentOnLeave(commentOnLeaveDto, req);
+  }
+  @Post('replyOnComment')
+  replyOnComment(@Body() replyOnCommentDto: ReplyOnCommentDto) {
+    return this.leaveService.replyOnComment(replyOnCommentDto);
   }
   @Post('approve')
   approve(@Body() approvalDto: ApprovalDto, @Request() req) {
