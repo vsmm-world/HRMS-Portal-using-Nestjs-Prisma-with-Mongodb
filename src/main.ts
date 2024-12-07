@@ -19,10 +19,17 @@ async function bootstrap() {
   return app;
 }
 
-if (require.main === module) {
+// Export handler for serverless environments
+export const handler = async (req, res) => {
+  const app = await bootstrap();
+  await app.getHttpAdapter().getInstance()(req, res);
+};
+
+// Start server if running locally
+if (process.env.NODE_ENV !== 'production') {
   bootstrap().then(app => {
-    app.listen(3000);
-    console.log('Server running on port 3000');
+    app.listen(process.env.PORT || 3000);
+    console.log(`Server running on port ${process.env.PORT || 3000}`);
   });
 }
 
