@@ -2,7 +2,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
-import { UserKeys } from 'src/shared/keys/user.keys';
+import { UserKeys } from '../shared/keys/user.keys';
 import { env } from 'process';
 
 // user.service.ts

@@ -1,4 +1,5 @@
 {
+  "extends": "./tsconfig.paths.json",
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,
@@ -16,8 +17,7 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false,
-    "esModuleInterop": true
+    "noFallthroughCasesInSwitch": false
   },
   "include": ["src/**/*", "api/**/*"],
   "exclude": ["node_modules", "dist"]
