@@ -8,6 +8,7 @@ import { RoleModule } from './role/role.module';
 import { AuthModule } from './auth/auth.module';
 import { AdministratorModule } from './administrator/administrator.module';
 import { BullModule } from '@nestjs/bull';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -26,5 +27,6 @@ import { BullModule } from '@nestjs/bull';
       },
     }),
   ],
+  providers: [AppController],
 })
 export class AppModule {}
