@@ -20,16 +20,19 @@ async function bootstrap() {
 }
 
 // Export handler for serverless environments
-export const handler = async (req, res) => {
+export const handler = async (req: any, res: any) => {
   const app = await bootstrap();
-  await app.getHttpAdapter().getInstance()(req, res);
+  const instance = app.getHttpAdapter().getInstance();
+  await instance(req, res);
 };
 
-// Start server if running locally
+// Only start server in development
 if (process.env.NODE_ENV !== 'production') {
   bootstrap().then(app => {
-    app.listen(process.env.PORT || 3000);
-    console.log(`Server running on port ${process.env.PORT || 3000}`);
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
   });
 }
 
