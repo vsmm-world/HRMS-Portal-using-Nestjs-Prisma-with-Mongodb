@@ -16,24 +16,24 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
   await app.init();
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
   return app;
 }
 
 // Export handler for serverless environments
-export const handler = async (req: any, res: any) => {
+export const handler = async (req, res) => {
   const app = await bootstrap();
-  const instance = app.getHttpAdapter().getInstance();
-  await instance(req, res);
+  await app.getHttpAdapter().getInstance()(req, res);
 };
 
-// Only start server in development
+// Start server if running locally
 if (process.env.NODE_ENV !== 'production') {
   bootstrap().then(app => {
-    const port = process.env.PORT || 3000;
-    app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
-    });
+    app.listen(process.env.PORT || 3000);
+    console.log(`Server running on port ${process.env.PORT || 3000}`);
   });
 }
 
 export default bootstrap;
+
