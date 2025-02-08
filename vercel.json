@@ -19,13 +19,9 @@
             "src": "/(.*)",
             "dest": "/api"
         }
+
     ],
     "env": {
         "NODE_ENV": "production"
-    },
-    "functions": {
-        "api/index.ts": {
-            "includeFiles": "dist/shared/**"
-        }
     }
 }
