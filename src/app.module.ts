@@ -18,18 +18,18 @@ import { AppController } from './app.controller';
     }),
     PrismaModule,
     UserModule,
-    EmployeeModule,
-    LeaveModule,
-    AttendanceModule,
-    RoleModule,
-    AuthModule,
-    AdministratorModule,
-    BullModule.forRoot({
-      redis: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT) || 6379,
-      },
-    }),
+    // EmployeeModule,
+    // LeaveModule,
+    // AttendanceModule,
+    // RoleModule,
+    // AuthModule,
+    // AdministratorModule,
+    // BullModule.forRoot({
+    //   redis: {
+    //     host: process.env.REDIS_HOST || 'localhost',
+    //     port: parseInt(process.env.REDIS_PORT) || 6379,
+    //   },
+    // }),
   ],
   controllers: [AppController],
 })
